@@ -7,6 +7,17 @@ namespace PharmaCat;
 
 public class Game1 : Game
 {
+    private enum GameState
+    {
+        MainMenu,
+        Jungle,
+        Shop,
+        Crafting,
+        Paused,
+        GameOver
+    }
+    private GameState _gameState = GameState.MainMenu;
+    
     private Texture2D spriteTexture;
     private Vector2 spritePosition;
     private GraphicsDeviceManager _graphics;
@@ -19,7 +30,7 @@ public class Game1 : Game
         IsMouseVisible = true;
         _graphics.PreferredBackBufferWidth = 1920;
         _graphics.PreferredBackBufferHeight = 1080;
-        _graphics.IsFullScreen = true;
+        _graphics.IsFullScreen = false;
         _graphics.ApplyChanges();
     }
 
@@ -42,6 +53,7 @@ public class Game1 : Game
 
     protected override void Update(GameTime gameTime)
     {
+        _input.Update();
         if (_input.FullScreen()) // F4 to toggle fullscreen
         {
             _graphics.IsFullScreen = !_graphics.IsFullScreen;
