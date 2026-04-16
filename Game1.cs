@@ -17,7 +17,8 @@ public class Game1 : Game
         GameOver
     }
     private GameState _gameState = GameState.MainMenu;
-    
+
+    private Player player;
     private Texture2D spriteTexture;
     private Vector2 spritePosition;
     private GraphicsDeviceManager _graphics;
@@ -44,8 +45,9 @@ public class Game1 : Game
     protected override void LoadContent()
     {
         _spriteBatch = new SpriteBatch(GraphicsDevice);
+        player = new Player(Content.Load<Texture2D>("cat"), Vector2.Zero);
 
-        spriteTexture = Content.Load<Texture2D>("cat");
+        
         spritePosition = Vector2.Zero;
 
         // TODO: use this.Content to load your game content here
@@ -59,6 +61,14 @@ public class Game1 : Game
             _graphics.IsFullScreen = !_graphics.IsFullScreen;
             _graphics.ApplyChanges(); 
         }
+        if (_input.RightClick())
+        {
+            player.SetTargetPosition(new Vector2(
+                _input._mouseNow.X,
+                _input._mouseNow.Y));
+        }
+
+        player.Update(gameTime, _input);
         
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
             Exit();
@@ -72,7 +82,7 @@ public class Game1 : Game
     {
         GraphicsDevice.Clear(Color.CornflowerBlue);
         _spriteBatch.Begin();
-        _spriteBatch.Draw(spriteTexture, spritePosition, Color.White);
+        player.Draw(_spriteBatch);
         _spriteBatch.End();
         // TODO: Add your drawing code here
 
