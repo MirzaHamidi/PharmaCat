@@ -19,7 +19,7 @@ namespace PharmaCat.Scripts
             targetPosition = target;
         }
 
-        public void Update(GameTime gameTime, InputState input)
+        public void Update(GameTime gameTime)
         {
             float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 

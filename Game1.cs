@@ -50,17 +50,48 @@ public class Game1 : Game
         
         spritePosition = Vector2.Zero;
 
-        // TODO: use this.Content to load your game content here
+        
     }
 
     protected override void Update(GameTime gameTime)
     {
+        switch (_gameState)
+    {
+        case GameState.MainMenu:
+            UpdateMenu(gameTime);
+            break;
+
+        case GameState.Jungle:
+            UpdateJungle(gameTime);
+            break;
+
+        case GameState.Shop:
+            UpdateShop(gameTime);
+            break;
+
+        case GameState.Crafting:
+            UpdateCrafting(gameTime);
+            break;
+    }
         _input.Update();
         if (_input.FullScreen()) // F4 to toggle fullscreen
         {
             _graphics.IsFullScreen = !_graphics.IsFullScreen;
             _graphics.ApplyChanges(); 
         }
+    
+
+        base.Update(gameTime);
+        
+        if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+            Exit();
+
+        
+
+        base.Update(gameTime);
+    }
+    private void UpdateJungle(GameTime gameTime)
+    {
         if (_input.RightClick())
         {
             player.SetTargetPosition(new Vector2(
@@ -68,24 +99,74 @@ public class Game1 : Game
                 _input._mouseNow.Y));
         }
 
-        player.Update(gameTime, _input);
-        
-        if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-            Exit();
-
-        // TODO: Add your update logic here
-
-        base.Update(gameTime);
+    player.Update(gameTime);
     }
 
-    protected override void Draw(GameTime gameTime)
+    private void UpdateMenu(GameTime gameTime)
+    {
+        if (_input.LeftClick())
+    {
+        _gameState = GameState.Jungle;
+    }
+    }
+
+    private void UpdateShop(GameTime gameTime)
+    {
+        
+    }
+
+    private void UpdateCrafting(GameTime gameTime)
+    {
+        
+    } 
+
+   protected override void Draw(GameTime gameTime)
+{
+    GraphicsDevice.Clear(Color.Black);
+
+    _spriteBatch.Begin();
+
+    switch (_gameState)
+    {
+        case GameState.MainMenu:
+            DrawMenu();
+            break;
+
+        case GameState.Jungle:
+            DrawJungle();
+            break;
+
+        case GameState.Shop:
+            DrawShop();
+            break;
+
+        case GameState.Crafting:
+            DrawCrafting();
+            break;
+    }
+
+    _spriteBatch.End();
+
+    base.Draw(gameTime);
+}
+    private void DrawMenu()
     {
         GraphicsDevice.Clear(Color.CornflowerBlue);
-        _spriteBatch.Begin();
-        player.Draw(_spriteBatch);
-        _spriteBatch.End();
-        // TODO: Add your drawing code here
-
-        base.Draw(gameTime);
     }
+
+    private void DrawJungle()
+    {
+        GraphicsDevice.Clear(Color.ForestGreen);
+        player.Draw(_spriteBatch);
+    }
+    private void DrawShop()
+    {
+        
+    }
+
+    private void DrawCrafting()
+    {
+        
+    }
+
 }
