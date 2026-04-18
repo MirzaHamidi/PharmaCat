@@ -44,7 +44,7 @@ namespace PharmaCat.Scripts
         public virtual void Draw(SpriteBatch spriteBatch)
         {
             
-            Vector2 centerPos = position + Origin * Scale; // Center position for rotation
+            Vector2 centerPos = position + Origin * Scale; 
 
             spriteBatch.Draw(
                 texture,

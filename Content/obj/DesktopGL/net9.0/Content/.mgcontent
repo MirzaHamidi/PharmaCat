@@ -5,8 +5,10 @@
   <Config />
   <SourceFiles>
     <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/PharmaCat/PharmaCat/Content/cat.png</File>
+    <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/PharmaCat/PharmaCat/Content/the-seamless-pattern-is-the-background-of-the-isometric-forest-park-rural-landscape-with-trees-stock-3d-illustration-vector.jpg</File>
   </SourceFiles>
   <DestFiles>
     <File xsi:nil="true" />
+    <File>mapjungle.jpg</File>
   </DestFiles>
 </SourceFileCollection>

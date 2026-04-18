@@ -33,3 +33,4 @@ C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\PharmaCat\PharmaCat\obj\Debug\net9.
 C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\PharmaCat\PharmaCat\obj\Debug\net9.0\ref\PharmaCat.dll
 C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\PharmaCat\PharmaCat\bin\Debug\net9.0\Content\cat.xnb
 C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\PharmaCat\PharmaCat\obj\Debug\net9.0\PharmaCat.sourcelink.json
+C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\PharmaCat\PharmaCat\bin\Debug\net9.0\Content\mapjungle.xnb

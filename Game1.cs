@@ -17,9 +17,10 @@ public class Game1 : Game
         GameOver
     }
     private GameState _gameState = GameState.MainMenu;
-
+    private Texture2D jungleMapTexture;
     private Player player;
-    private Texture2D spriteTexture;
+    private Camera2D camera;
+    private float targetZoom = 1f;
     private Vector2 spritePosition;
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
@@ -38,6 +39,7 @@ public class Game1 : Game
     protected override void Initialize()
     {
         // TODO: Add your initialization logic here
+        camera = new Camera2D();
         _input = new InputState();
         base.Initialize();
     }
@@ -46,7 +48,7 @@ public class Game1 : Game
     {
         _spriteBatch = new SpriteBatch(GraphicsDevice);
         player = new Player(Content.Load<Texture2D>("cat"), Vector2.Zero);
-
+        jungleMapTexture = Content.Load<Texture2D>("mapjungle");
         
         spritePosition = Vector2.Zero;
 
@@ -54,8 +56,22 @@ public class Game1 : Game
     }
 
     protected override void Update(GameTime gameTime)
+{
+    _input.Update();
+
+    if (_input.FullScreen())
     {
-        switch (_gameState)
+        _graphics.IsFullScreen = !_graphics.IsFullScreen;
+        _graphics.ApplyChanges();
+    }
+
+    if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed ||
+        Keyboard.GetState().IsKeyDown(Keys.Escape))
+    {
+        Exit();
+    }
+
+    switch (_gameState)
     {
         case GameState.MainMenu:
             UpdateMenu(gameTime);
@@ -73,33 +89,46 @@ public class Game1 : Game
             UpdateCrafting(gameTime);
             break;
     }
-        _input.Update();
-        if (_input.FullScreen()) // F4 to toggle fullscreen
-        {
-            _graphics.IsFullScreen = !_graphics.IsFullScreen;
-            _graphics.ApplyChanges(); 
-        }
-    
 
-        base.Update(gameTime);
-        
-        if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-            Exit();
-
-        
-
-        base.Update(gameTime);
-    }
+    base.Update(gameTime);
+}
     private void UpdateJungle(GameTime gameTime)
     {
-        if (_input.RightClick())
+        int scrollDelta = _input.MouseScrollDelta();
+
+        if (scrollDelta > 0)
         {
-            player.SetTargetPosition(new Vector2(
-                _input._mouseNow.X,
-                _input._mouseNow.Y));
+            targetZoom += 0.1f;
+        }
+        
+        else if (scrollDelta < 0)
+        {
+            targetZoom -= 0.1f;
         }
 
-    player.Update(gameTime);
+        targetZoom = MathHelper.Clamp(targetZoom, 0.8f, 1.4f);
+
+        camera.Zoom = MathHelper.Lerp(
+            camera.Zoom,
+            targetZoom,
+            8f * (float)gameTime.ElapsedGameTime.TotalSeconds);
+
+        if (_input.RightClick())
+        {
+            Vector2 mouseScreenPos = new Vector2(_input._mouseNow.X, _input._mouseNow.Y);
+            Vector2 mouseWorldPos = camera.ScreenToWorld(mouseScreenPos, GraphicsDevice.Viewport);
+
+            player.SetTargetPosition(mouseWorldPos);
+        }
+
+        player.Update(gameTime);
+
+        float smoothSpeed = 5f;
+        camera.Position = Vector2.Lerp(
+            camera.Position,
+            player.Position,
+            smoothSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds
+        );
     }
 
     private void UpdateMenu(GameTime gameTime)
@@ -122,30 +151,40 @@ public class Game1 : Game
 
    protected override void Draw(GameTime gameTime)
 {
-    GraphicsDevice.Clear(Color.Black);
-
-    _spriteBatch.Begin();
-
     switch (_gameState)
     {
         case GameState.MainMenu:
+            GraphicsDevice.Clear(Color.CornflowerBlue);
+
+            _spriteBatch.Begin();
             DrawMenu();
+            _spriteBatch.End();
             break;
 
         case GameState.Jungle:
+            GraphicsDevice.Clear(Color.ForestGreen);
+
+            _spriteBatch.Begin(transformMatrix: camera.GetViewMatrix(GraphicsDevice.Viewport));
             DrawJungle();
+            _spriteBatch.End();
             break;
 
         case GameState.Shop:
+            GraphicsDevice.Clear(Color.Black);
+
+            _spriteBatch.Begin();
             DrawShop();
+            _spriteBatch.End();
             break;
 
         case GameState.Crafting:
+            GraphicsDevice.Clear(Color.Black);
+
+            _spriteBatch.Begin();
             DrawCrafting();
+            _spriteBatch.End();
             break;
     }
-
-    _spriteBatch.End();
 
     base.Draw(gameTime);
 }
@@ -156,7 +195,8 @@ public class Game1 : Game
 
     private void DrawJungle()
     {
-        GraphicsDevice.Clear(Color.ForestGreen);
+        jungleMapTexture = Content.Load<Texture2D>("mapjungle");
+        _spriteBatch.Draw(jungleMapTexture, Vector2.Zero, Color.White);
         player.Draw(_spriteBatch);
     }
     private void DrawShop()

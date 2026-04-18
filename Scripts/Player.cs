@@ -14,12 +14,17 @@ namespace PharmaCat.Scripts
             targetPosition = position;
         }
 
+        public Vector2 Position
+        {
+            get => position;
+            set => position = value;
+        }
         public void SetTargetPosition(Vector2 target)
         {
             targetPosition = target;
         }
 
-        public void Update(GameTime gameTime)
+        public override void Update(GameTime gameTime)
         {
             float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
