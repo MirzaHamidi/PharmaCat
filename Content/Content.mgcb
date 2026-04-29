@@ -25,6 +25,13 @@
 /processorParam:TextureFormat=Color
 /build:cat.png
 
+#begin Font.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:Font.spritefont
+
 #begin the-seamless-pattern-is-the-background-of-the-isometric-forest-park-rural-landscape-with-trees-stock-3d-illustration-vector.jpg
 /importer:TextureImporter
 /processor:TextureProcessor

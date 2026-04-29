@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using PharmaCat.Scripts;
@@ -16,6 +17,7 @@ public class Game1 : Game
         Paused,
         GameOver
     }
+    private SpriteFont font;
     private GameState _gameState = GameState.MainMenu; // start at main menu
     private Texture2D jungleMapTexture; // this is the test bg picture, we will replace it with procedural generated map later
     private Player player; // player
@@ -25,6 +27,7 @@ public class Game1 : Game
     private GraphicsDeviceManager _graphics; // graphics manager
     private SpriteBatch _spriteBatch; // for drawing sprites
     private InputState _input; // input class call
+    private float jg_Counter = 50f; // this is the counter for jungle scene, we will use it for day/night cycle.
     public Game1()
     {
         _graphics = new GraphicsDeviceManager(this); 
@@ -46,10 +49,11 @@ public class Game1 : Game
 
     protected override void LoadContent()
     {
+        font = Content.Load<SpriteFont>("Font"); 
         _spriteBatch = new SpriteBatch(GraphicsDevice); // initialize sprite batch for drawing
         player = new Player(Content.Load<Texture2D>("cat"), Vector2.Zero); // initialize player with texture and position
         jungleMapTexture = Content.Load<Texture2D>("mapjungle"); // load jungle map texture
-        
+       
         spritePosition = Vector2.Zero; // initialize sprite position
 
         //Loadcontent is for preparing assets for the game this is the current assets can be used in game
@@ -93,6 +97,17 @@ public class Game1 : Game
 }
     private void UpdateJungle(GameTime gameTime) //jungles update logic
     {
+        if (jg_Counter > 0)
+        {
+            jg_Counter -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+            if (jg_Counter < 0)
+            {
+                jg_Counter = 0f; 
+                _gameState = GameState.Crafting; // return to main menu after counter reaches 0, this is just for testing day/night cycle, we will replace it with actual day/night cycle later
+
+            }
+        }
+       
         int scrollDelta = _input.MouseScrollDelta();
 
         if (scrollDelta > 0)
@@ -161,12 +176,17 @@ public class Game1 : Game
             break;
 
         case GameState.Jungle:
-            GraphicsDevice.Clear(Color.ForestGreen);
+        GraphicsDevice.Clear(Color.ForestGreen);
 
-            _spriteBatch.Begin(transformMatrix: camera.GetViewMatrix(GraphicsDevice.Viewport));
-            DrawJungle();
-            _spriteBatch.End();
-            break;
+        _spriteBatch.Begin(transformMatrix: camera.GetViewMatrix(GraphicsDevice.Viewport));
+        DrawJungle();
+        _spriteBatch.End();
+
+        _spriteBatch.Begin();
+        _spriteBatch.DrawString(font, $"{Math.Ceiling(jg_Counter)}", new Vector2(1600, 100), Color.White);
+        _spriteBatch.End();
+
+        break;
 
         case GameState.Shop:
             GraphicsDevice.Clear(Color.Black);
@@ -192,9 +212,8 @@ public class Game1 : Game
         GraphicsDevice.Clear(Color.CornflowerBlue);
     }
 
-    private void DrawJungle() // jungle draw logic
+    private void DrawJungle()
     {
-        jungleMapTexture = Content.Load<Texture2D>("mapjungle");
         _spriteBatch.Draw(jungleMapTexture, Vector2.Zero, Color.White);
         player.Draw(_spriteBatch);
     }
