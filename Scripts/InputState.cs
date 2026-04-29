@@ -6,11 +6,11 @@ namespace PharmaCat.Scripts
 {
     public class InputState
     {
-        public MouseState _mouseNow, _mousePrev;
-        public KeyboardState _kbNow, _kbPrev;
-        private GamePadState _gpNow, _gpPrev;
+        public MouseState _mouseNow, _mousePrev; //these are the srates to track if mouse buttons are clicked or not, we will use this for menu interactions and player movement in jungle scene
+        public KeyboardState _kbNow, _kbPrev; // these are the states to track if keys are pressed or not, we will use this for menu interactions and player movement in jungle scene
+        private GamePadState _gpNow, _gpPrev; // these are the states to track if gamepad buttons are pressed or not, we will use this for menu interactions and player movement in jungle scene
 
-        public void Update()
+        public void Update() // this is the update method for input states, we will call this in game1 update method to keep track of input states
         {
             _mousePrev = _mouseNow;
             _kbPrev = _kbNow;
