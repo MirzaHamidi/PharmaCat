@@ -4,9 +4,22 @@
     ],
     "fileStates": {
     },
+    "last.imagePath": "C:/Users/mmirz/OneDrive/Masaüstü",
+    "map.height": 70,
+    "map.lastUsedFormat": "tmx",
+    "map.orientation": "2",
+    "map.tileHeight": 60,
+    "map.tileWidth": 100,
+    "map.width": 50,
     "openFiles": [
     ],
     "project": "PharmaCatTiledProject.tiled-project",
     "recentFiles": [
-    ]
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 70,
+        "width": 100
+    },
+    "tileset.useTransparentColor": false
 }

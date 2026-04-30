@@ -11,7 +11,7 @@ namespace PharmaCat.Scripts
 {
     internal class Sprite
     {
-        public float Scale = 0.3f;
+        public float Scale = 0.15f;
 
         public Texture2D texture;
         public Vector2 position;

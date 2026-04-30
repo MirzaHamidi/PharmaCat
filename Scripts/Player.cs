@@ -6,7 +6,7 @@ namespace PharmaCat.Scripts
     internal class Player : Sprite
     {
         private Vector2 velocity;
-        private Vector2 targetPosition;
+        public Vector2 targetPosition;
         private const float MoveSpeed = 200f;
 
         public Player(Texture2D texture, Vector2 position) : base(texture, position)

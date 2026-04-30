@@ -17,6 +17,9 @@ public class Game1 : Game
         Paused,
         GameOver
     }
+    private bool cameraInitialized = false;
+    public Vector2 targetPosition { get; private set; }
+    private Vector2 cameraOffset = new Vector2(0, 0);
     private SpriteFont font;
     private GameState _gameState = GameState.MainMenu; // start at main menu
     private Texture2D jungleMapTexture; // this is the test bg picture, we will replace it with procedural generated map later
@@ -51,9 +54,12 @@ public class Game1 : Game
     {
         font = Content.Load<SpriteFont>("Font"); 
         _spriteBatch = new SpriteBatch(GraphicsDevice); // initialize sprite batch for drawing
-        player = new Player(Content.Load<Texture2D>("cat"), Vector2.Zero); // initialize player with texture and position
+        
         jungleMapTexture = Content.Load<Texture2D>("mapjungle"); // load jungle map texture
-       
+        Vector2 mapCenter = new Vector2(
+        jungleMapTexture.Width / 2f,
+        jungleMapTexture.Height / 2f);
+        player = new Player(Content.Load<Texture2D>("cat"), mapCenter); // initialize player with texture and position
         spritePosition = Vector2.Zero; // initialize sprite position
 
         //Loadcontent is for preparing assets for the game this is the current assets can be used in game
@@ -120,7 +126,7 @@ public class Game1 : Game
             targetZoom -= 0.1f;
         }
 
-        targetZoom = MathHelper.Clamp(targetZoom, 0.8f, 1.4f);
+        targetZoom = MathHelper.Clamp(targetZoom, 2f, 2.7f);
 
         camera.Zoom = MathHelper.Lerp(
             camera.Zoom,
@@ -137,12 +143,35 @@ public class Game1 : Game
 
         player.Update(gameTime);
 
-        float smoothSpeed = 5f;
-        camera.Position = Vector2.Lerp(
-            camera.Position,
-            player.Position,
-            smoothSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds
-        );
+        float smoothSpeed = 3f;
+        float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+        Vector2 moveDirection = player.targetPosition - player.Position;
+        if (!cameraInitialized)
+        {
+            camera.Position = player.Position;
+            cameraInitialized = true;
+        }
+
+    if (moveDirection.LengthSquared() > 0.01f)
+        {
+        moveDirection.Normalize();
+     }
+    else
+        {
+        moveDirection = Vector2.Zero;
+        }
+
+    float lookAheadScreenPixels = 200f;
+    float lookAheadWorldDistance = lookAheadScreenPixels / camera.Zoom;
+
+    Vector2 targetCameraPosition =
+    player.Position + moveDirection * lookAheadWorldDistance;
+
+    camera.Position = Vector2.Lerp(
+    camera.Position,
+    targetCameraPosition,
+    smoothSpeed * deltaTime);
     }
 
     private void UpdateMenu(GameTime gameTime) // main menu update logic

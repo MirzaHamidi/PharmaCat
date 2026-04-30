@@ -32,7 +32,7 @@
 /processorParam:TextureFormat=Compressed
 /build:Font.spritefont
 
-#begin the-seamless-pattern-is-the-background-of-the-isometric-forest-park-rural-landscape-with-trees-stock-3d-illustration-vector.jpg
+#begin PharmaCatTileMap.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -42,5 +42,5 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:the-seamless-pattern-is-the-background-of-the-isometric-forest-park-rural-landscape-with-trees-stock-3d-illustration-vector.jpg;mapjungle.jpg
+/build:PharmaCatTileMap.png;mapjungle.png
 
