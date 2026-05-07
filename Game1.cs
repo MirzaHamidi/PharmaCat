@@ -3,6 +3,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using PharmaCat.Scripts;
+using Myra;
+using Myra.Graphics2D.UI;
 
 namespace PharmaCat;
 
@@ -17,12 +19,15 @@ public class Game1 : Game
         Paused,
         GameOver
     }
+    private Desktop _desktop;
+    private TextButton _startButton;
     private bool cameraInitialized = false;
     public Vector2 targetPosition { get; private set; }
     private Vector2 cameraOffset = new Vector2(0, 0);
     private SpriteFont font;
     private GameState _gameState = GameState.MainMenu; // start at main menu
     private Texture2D jungleMapTexture; // this is the test bg picture, we will replace it with procedural generated map later
+    private Texture2D table;
     private Player player; // player
     private Camera2D camera; // camera for jungle scene
     private float targetZoom = 1f; // camera zoom
@@ -30,7 +35,7 @@ public class Game1 : Game
     private GraphicsDeviceManager _graphics; // graphics manager
     private SpriteBatch _spriteBatch; // for drawing sprites
     private InputState _input; // input class call
-    private float jg_Counter = 50f; // this is the counter for jungle scene, we will use it for day/night cycle.
+    private float jg_Counter = 10f; // this is the counter for jungle scene, we will use it for day/night cycle.
     public Game1()
     {
         _graphics = new GraphicsDeviceManager(this); 
@@ -56,11 +61,35 @@ public class Game1 : Game
         _spriteBatch = new SpriteBatch(GraphicsDevice); // initialize sprite batch for drawing
         
         jungleMapTexture = Content.Load<Texture2D>("mapjungle"); // load jungle map texture
+        table = Content.Load<Texture2D>("table"); // load crafting table texture
         Vector2 mapCenter = new Vector2(
         jungleMapTexture.Width / 2f,
         jungleMapTexture.Height / 2f);
         player = new Player(Content.Load<Texture2D>("cat"), mapCenter); // initialize player with texture and position
         spritePosition = Vector2.Zero; // initialize sprite position
+
+        MyraEnvironment.Game = this;
+
+        _startButton = new TextButton
+        {
+        Text = "Start Game",
+        Width = 220,
+        Height = 70,
+        Left = 850,
+        Top = 500
+        };
+
+        _startButton.Click += (s, a) =>
+        {
+        _gameState = GameState.Jungle;
+        _desktop.Root = null;
+        };
+
+        var panel = new Panel();
+        panel.Widgets.Add(_startButton);
+
+        _desktop = new Desktop();
+        _desktop.Root = panel;
 
         //Loadcontent is for preparing assets for the game this is the current assets can be used in game
     }
@@ -176,10 +205,7 @@ public class Game1 : Game
 
     private void UpdateMenu(GameTime gameTime) // main menu update logic
     {
-        if (_input.LeftClick())
-    {
-        _gameState = GameState.Jungle;
-    }
+        
     }
 
     private void UpdateShop(GameTime gameTime) // shop update logic
@@ -239,6 +265,10 @@ public class Game1 : Game
     private void DrawMenu() // main menu draw logic
     {
         GraphicsDevice.Clear(Color.CornflowerBlue);
+        if (_desktop != null)
+        {
+            _desktop.Render();
+        }
     }
 
     private void DrawJungle()
@@ -253,7 +283,7 @@ public class Game1 : Game
 
     private void DrawCrafting() // crafting draw logic
     {
-        
+        _spriteBatch.Draw(table, Vector2.Zero, Color.White); // draw crafting table in the center of the screen, we will replace it with actual crafting UI later
     }
 
 }

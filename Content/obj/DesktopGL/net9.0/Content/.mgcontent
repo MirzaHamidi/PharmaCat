@@ -4,11 +4,13 @@
   <Platform>DesktopGL</Platform>
   <Config />
   <SourceFiles>
+    <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/PharmaCat/PharmaCat/Content/../../../../table.png</File>
     <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/PharmaCat/PharmaCat/Content/cat.png</File>
     <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/PharmaCat/PharmaCat/Content/Font.spritefont</File>
     <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/PharmaCat/PharmaCat/Content/PharmaCatTileMap.png</File>
   </SourceFiles>
   <DestFiles>
+    <File>table.png</File>
     <File xsi:nil="true" />
     <File xsi:nil="true" />
     <File>mapjungle.png</File>
