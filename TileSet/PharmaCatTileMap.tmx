@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="staggered" renderorder="right-down" width="50" height="70" tilewidth="100" tileheight="60" infinite="0" staggeraxis="y" staggerindex="odd" nextlayerid="8" nextobjectid="2">
+<map version="1.10" tiledversion="1.12.1" orientation="staggered" renderorder="right-down" width="50" height="70" tilewidth="100" tileheight="60" infinite="0" staggeraxis="y" staggerindex="odd" nextlayerid="9" nextobjectid="4">
  <tileset firstgid="1" source="Cim(Gecici).tsx"/>
  <tileset firstgid="2" source="tree(gecici).tsx"/>
  <tileset firstgid="3" source="Bitki2.tsx"/>
@@ -78,7 +78,7 @@
 </data>
  </layer>
  <imagelayer id="7" name="Ground"/>
- <layer id="5" name="Bushes" width="50" height="70" visible="0">
+ <layer id="5" name="Bushes" width="50" height="70">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -152,7 +152,12 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="6" name="Trees" width="50" height="70" visible="0">
+ <objectgroup id="8" name="bushA">
+  <object id="3" x="1862.33" y="1803.33">
+   <polygon points="0,0 42,-24.6667 76.3333,-5.33333 37.3333,16.6667"/>
+  </object>
+ </objectgroup>
+ <layer id="6" name="Trees" width="50" height="70">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,

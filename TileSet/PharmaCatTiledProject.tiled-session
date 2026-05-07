@@ -1,9 +1,27 @@
 {
-    "activeFile": "",
+    "activeFile": "PharmaCatTileMap.tmx",
     "expandedProjectPaths": [
+        "."
     ],
     "file.lastUsedOpenFilter": "Tüm Dosyalar (*)",
     "fileStates": {
+        "Bitki2.tsx": {
+            "scaleInDock": 1
+        },
+        "Cim(Gecici).tsx": {
+            "scaleInDock": 1
+        },
+        "PharmaCatTileMap.tmx": {
+            "scale": 0.5,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 3169,
+                "y": 948
+            }
+        },
+        "tree(gecici).tsx": {
+            "scaleInDock": 1
+        }
     },
     "last.imagePath": "C:/Users/mmirz/OneDrive/Masaüstü",
     "map.height": 70,
@@ -13,9 +31,11 @@
     "map.tileWidth": 100,
     "map.width": 50,
     "openFiles": [
+        "PharmaCatTileMap.tmx"
     ],
     "project": "PharmaCatTiledProject.tiled-project",
     "recentFiles": [
+        "PharmaCatTileMap.tmx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {
