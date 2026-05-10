@@ -19,8 +19,11 @@ public class Game1 : Game
         Paused,
         GameOver
     }
-    private Desktop _desktop;
+    private Desktop _menuDesktop;
+    private Desktop _shopDesktop;
+    private Desktop _craftingDesktop;
     private TextButton _startButton;
+    private TextButton _gotoshop;
     private bool cameraInitialized = false;
     public Vector2 targetPosition { get; private set; }
     private Vector2 cameraOffset = new Vector2(0, 0);
@@ -56,43 +59,29 @@ public class Game1 : Game
     }
 
     protected override void LoadContent()
-    {
-        font = Content.Load<SpriteFont>("Font"); 
-        _spriteBatch = new SpriteBatch(GraphicsDevice); // initialize sprite batch for drawing
-        
-        jungleMapTexture = Content.Load<Texture2D>("mapjungle"); // load jungle map texture
-        table = Content.Load<Texture2D>("table"); // load crafting table texture
-        Vector2 mapCenter = new Vector2(
+{
+    font = Content.Load<SpriteFont>("Font");
+    _spriteBatch = new SpriteBatch(GraphicsDevice);
+
+    jungleMapTexture = Content.Load<Texture2D>("mapjungle");
+    table = Content.Load<Texture2D>("table");
+
+    Vector2 mapCenter = new Vector2(
         jungleMapTexture.Width / 2f,
         jungleMapTexture.Height / 2f);
-        player = new Player(Content.Load<Texture2D>("cat"), mapCenter); // initialize player with texture and position
-        spritePosition = Vector2.Zero; // initialize sprite position
 
-        MyraEnvironment.Game = this;
+    player = new Player(Content.Load<Texture2D>("cat"), mapCenter);
 
-        _startButton = new TextButton
-        {
-        Text = "Start Game",
-        Width = 220,
-        Height = 70,
-        Left = 850,
-        Top = 500
-        };
+    MyraEnvironment.Game = this;
 
-        _startButton.Click += (s, a) =>
-        {
-        _gameState = GameState.Jungle;
-        _desktop.Root = null;
-        };
+    CreateMainMenu();
+    CreateCraftingMenu();
+}
 
-        var panel = new Panel();
-        panel.Widgets.Add(_startButton);
-
-        _desktop = new Desktop();
-        _desktop.Root = panel;
+        
 
         //Loadcontent is for preparing assets for the game this is the current assets can be used in game
-    }
+    
 
     protected override void Update(GameTime gameTime)
     {
@@ -265,9 +254,9 @@ public class Game1 : Game
     private void DrawMenu() // main menu draw logic
     {
         GraphicsDevice.Clear(Color.CornflowerBlue);
-        if (_desktop != null)
+        if (_menuDesktop != null)
         {
-            _desktop.Render();
+            _menuDesktop.Render();
         }
     }
 
@@ -283,7 +272,62 @@ public class Game1 : Game
 
     private void DrawCrafting() // crafting draw logic
     {
-        _spriteBatch.Draw(table, Vector2.Zero, Color.White); // draw crafting table in the center of the screen, we will replace it with actual crafting UI later
+        _spriteBatch.Draw(table, Vector2.Zero, Color.White); 
+        if (_craftingDesktop != null)
+        {
+            _craftingDesktop.Render();
+        }
+        // draw crafting table in the center of the screen, we will replace it with actual crafting UI later
+
     }
 
+    
+   private void CreateMainMenu()
+    {
+    var panel = new Panel();
+
+    _startButton = new TextButton
+    {
+        Text = "Start Game",
+        Width = 220,
+        Height = 70,
+        Left = 850,
+        Top = 500
+    };
+
+    _startButton.Click += (s, a) =>
+    {
+        _gameState = GameState.Jungle;
+    };
+
+    panel.Widgets.Add(_startButton);
+    _menuDesktop = new Desktop();
+    _menuDesktop.Root = panel;
+}
+
+private void CreateCraftingMenu()
+{
+   
+    
+    var panel = new Panel();
+
+    _gotoshop = new TextButton
+    {
+        Text = "Go to Shop",
+        Width = 220,
+        Height = 70,
+        Left = 850,
+        Top = 500
+    };
+
+    _gotoshop.Click += (s, a) =>
+    {
+        _gameState = GameState.Shop;
+    };
+    panel.Widgets.Add(_gotoshop);
+    _craftingDesktop = new Desktop();
+    _craftingDesktop.Root = panel;
+
+    
+}
 }
