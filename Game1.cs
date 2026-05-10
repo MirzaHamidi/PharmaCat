@@ -19,6 +19,15 @@ public class Game1 : Game
         Paused,
         GameOver
     }
+    private ShopSystem _shopSystem;
+    private NarratorSystem _narratorSystem;
+    private Customers currentCustomer;
+    private TextButton _serveButton;
+    private TextButton _nextCustomerButton;
+    private Label _customerDialogueLabel;
+    private TextBox _priceBox;
+    private ComboBox _potionBox;
+    private Label _resultLabel;
     private Desktop _menuDesktop;
     private Desktop _shopDesktop;
     private Desktop _craftingDesktop;
@@ -65,7 +74,8 @@ public class Game1 : Game
 
     jungleMapTexture = Content.Load<Texture2D>("mapjungle");
     table = Content.Load<Texture2D>("table");
-
+    _shopSystem = new ShopSystem();
+    _narratorSystem = new NarratorSystem();
     Vector2 mapCenter = new Vector2(
         jungleMapTexture.Width / 2f,
         jungleMapTexture.Height / 2f);
@@ -76,6 +86,7 @@ public class Game1 : Game
 
     CreateMainMenu();
     CreateCraftingMenu();
+    CreateShopMenu();
 }
 
         
@@ -268,7 +279,12 @@ public class Game1 : Game
     private void DrawShop() // shop draw logic
     {
         
+    if (_shopDesktop != null)
+    {
+        _shopDesktop.Render();
     }
+    }
+    
 
     private void DrawCrafting() // crafting draw logic
     {
@@ -329,5 +345,136 @@ private void CreateCraftingMenu()
     _craftingDesktop.Root = panel;
 
     
+}
+
+private void CreateShopMenu()
+{
+    currentCustomer = new Customers();
+
+    var panel = new Panel();
+
+    _customerDialogueLabel = new Label
+    {
+        Text = currentCustomer.CurrentDialogue,
+        Left = 850,
+        Top = 100,
+        Width = 700,
+        Height = 120
+    };
+
+    _serveButton = new TextButton
+    {
+        Text = "Serve Customer",
+        Left = 850,
+        Top = 250,
+        Width = 220,
+        Height = 60
+    };
+
+    _potionBox = new ComboBox
+    {
+        Left = 850,
+        Top = 340,
+        Width = 250,
+        Height = 40,
+        Visible = false
+    };
+
+    _potionBox.Items.Add(new ListItem("Sleep Potion"));
+    _potionBox.Items.Add(new ListItem("Memory Potion"));
+    _potionBox.Items.Add(new ListItem("Love Potion"));
+    _potionBox.Items.Add(new ListItem("Anti-Curse Potion"));
+
+    _priceBox = new TextBox
+    {
+        Left = 850,
+        Top = 400,
+        Width = 250,
+        Height = 40,
+        Text = "10",
+        Visible = false
+    };
+
+    var sellButton = new TextButton
+    {
+        Text = "Sell",
+        Left = 850,
+        Top = 460,
+        Width = 220,
+        Height = 60,
+        Visible = false
+    };
+
+    _resultLabel = new Label
+    {
+        Text = "",
+        Left = 850,
+        Top = 540,
+        Width = 600,
+        Height = 80
+    };
+
+    _nextCustomerButton = new TextButton
+    {
+        Text = "Next Customer",
+        Left = 850,
+        Top = 640,
+        Width = 220,
+        Height = 60,
+        Visible = false
+    };
+
+    _serveButton.Click += (s, a) =>
+{
+    _potionBox.Visible = true;
+    _priceBox.Visible = true;
+    sellButton.Visible = true;
+};
+
+sellButton.Click += (s, a) =>
+{
+    string potion = _potionBox.SelectedItem.Text;
+
+    int price = int.Parse(_priceBox.Text);
+
+    _resultLabel.Text =
+        _narratorSystem.GetSellResultText(
+            currentCustomer,
+            potion,
+            price
+        );
+
+    _nextCustomerButton.Visible = true;
+};
+
+_nextCustomerButton.Click += (s, a) =>
+{
+    currentCustomer = new Customers();
+
+    _customerDialogueLabel.Text =
+        currentCustomer.CurrentDialogue;
+
+    _resultLabel.Text =
+        _narratorSystem.GetWaitingText();
+
+    _priceBox.Text = "10";
+
+    _potionBox.Visible = false;
+    _priceBox.Visible = false;
+
+    sellButton.Visible = false;
+    _nextCustomerButton.Visible = false;
+};
+
+panel.Widgets.Add(_customerDialogueLabel);
+panel.Widgets.Add(_serveButton);
+panel.Widgets.Add(_potionBox);
+panel.Widgets.Add(_priceBox);
+panel.Widgets.Add(sellButton);
+panel.Widgets.Add(_resultLabel);
+panel.Widgets.Add(_nextCustomerButton);
+
+_shopDesktop = new Desktop();
+_shopDesktop.Root = panel;
 }
 }
