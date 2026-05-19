@@ -15,15 +15,36 @@ namespace PharmaCat.Scripts.World
             int firstGid,
             int tileWidth,
             int tileHeight,
-            int tilesetColumns)
+            int tilesetColumns,
+            int mapPixelWidth,
+            int mapPixelHeight)
         {
             string[] lines = File.ReadAllLines(csvPath);
 
-            int mapTileWidth = 110;
-            int mapTileHeight = 70;
+            // Count actual data rows and columns from the CSV
+            int csvRows = 0;
+            int csvCols = 0;
+            foreach (string line in lines)
+            {
+                if (string.IsNullOrWhiteSpace(line))
+                    continue;
+                csvRows++;
+                int colCount = line.Split(',').Length;
+                if (colCount > csvCols)
+                    csvCols = colCount;
+            }
+
+            // Calculate tile dimensions from map image size and CSV grid
+            // Staggered iso: width = cols * tileW + tileW/2 = (cols + 0.5) * tileW
+            // Staggered iso: height = (rows - 1) * (tileH/2) + tileH = (rows + 1) * tileH / 2
+            float mapTileWidth = mapPixelWidth / (csvCols + 0.5f);
+            float mapTileHeight = mapPixelHeight * 2f / (csvRows + 1f);
 
             for (int y = 0; y < lines.Length; y++)
             {
+                if (string.IsNullOrWhiteSpace(lines[y]))
+                    continue;
+
                 string[] values = lines[y].Split(',');
 
                 for (int x = 0; x < values.Length; x++)
