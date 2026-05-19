@@ -47,3 +47,5 @@ C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\PharmaCat\PharmaCat\bin\Debug\net9.
 C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\PharmaCat\PharmaCat\bin\Debug\net9.0\XNAssets.FontStashSharp.MonoGame.dll
 C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\PharmaCat\PharmaCat\bin\Debug\net9.0\XNAssets.MonoGame.dll
 C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\PharmaCat\PharmaCat\bin\Debug\net9.0\Content\table.xnb
+C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\PharmaCat\PharmaCat\bin\Debug\net9.0\Content\agacmap.xnb
+C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\PharmaCat\PharmaCat\bin\Debug\net9.0\Content\bitkimap.xnb

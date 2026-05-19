@@ -5,6 +5,8 @@ using Microsoft.Xna.Framework.Input;
 using PharmaCat.Scripts;
 using Myra;
 using Myra.Graphics2D.UI;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace PharmaCat;
 
@@ -33,6 +35,13 @@ public class Game1 : Game
     private Desktop _craftingDesktop;
     private TextButton _startButton;
     private TextButton _gotoshop;
+    private List<TiledIsoEntity> trees = new List<TiledIsoEntity>();
+    private List<TiledIsoEntity> bushes = new List<TiledIsoEntity>();
+
+    private Texture2D treeTileset;
+    private Texture2D bushTileset;
+
+    private int herbCount = 0;
     private bool cameraInitialized = false;
     public Vector2 targetPosition { get; private set; }
     private Vector2 cameraOffset = new Vector2(0, 0);
@@ -47,7 +56,7 @@ public class Game1 : Game
     private GraphicsDeviceManager _graphics; // graphics manager
     private SpriteBatch _spriteBatch; // for drawing sprites
     private InputState _input; // input class call
-    private float jg_Counter = 10f; // this is the counter for jungle scene, we will use it for day/night cycle.
+    private float jg_Counter = 150f; // this is the counter for jungle scene, we will use it for day/night cycle.
     public Game1()
     {
         _graphics = new GraphicsDeviceManager(this); 
@@ -81,6 +90,17 @@ public class Game1 : Game
         jungleMapTexture.Height / 2f);
 
     player = new Player(Content.Load<Texture2D>("cat"), mapCenter);
+    treeTileset = Texture2D.FromStream(
+    GraphicsDevice,
+    System.IO.File.OpenRead("Content/agacmap.PNG")
+    );
+
+    bushTileset = Texture2D.FromStream(
+    GraphicsDevice,
+    System.IO.File.OpenRead("Content/bitkimap.PNG")
+    );
+
+    CreateTestEntities();
 
     MyraEnvironment.Game = this;
 
@@ -169,7 +189,19 @@ public class Game1 : Game
 
             player.SetTargetPosition(mouseWorldPos);
         }
-
+        if (_input.KeyPressed(Keys.E))
+        {
+        foreach (var bush in bushes)
+        {
+        if (!bush.Collected && Vector2.Distance(player.Position, bush.Position) < 80f)
+        {
+            bush.Collected = true;
+            herbCount++;
+            break;
+        }
+        }
+        
+        }
         player.Update(gameTime);
 
         float smoothSpeed = 3f;
@@ -201,6 +233,15 @@ public class Game1 : Game
     camera.Position,
     targetCameraPosition,
     smoothSpeed * deltaTime);
+    }
+
+   private void CreateTestEntities()
+    {
+    Rectangle treeSource = new Rectangle(0, 0, treeTileset.Width, treeTileset.Height);
+    Rectangle bushSource = new Rectangle(0, 0, bushTileset.Width, bushTileset.Height);
+
+    trees.Add(new TiledIsoEntity(treeTileset, treeSource, Vector2.Zero, false));
+    bushes.Add(new TiledIsoEntity(bushTileset, bushSource, Vector2.Zero, true));
     }
 
     private void UpdateMenu(GameTime gameTime) // main menu update logic
@@ -239,6 +280,7 @@ public class Game1 : Game
 
         _spriteBatch.Begin();
         _spriteBatch.DrawString(font, $"{Math.Ceiling(jg_Counter)}", new Vector2(1600, 100), Color.White);
+        _spriteBatch.DrawString(font, $"Herb: {herbCount}", new Vector2(1600, 150), Color.White);
         _spriteBatch.End();
 
         break;
@@ -272,10 +314,30 @@ public class Game1 : Game
     }
 
     private void DrawJungle()
+{
+    _spriteBatch.Draw(jungleMapTexture, Vector2.Zero, Color.White);
+
+    var renderList = new List<object>();
+
+    renderList.Add(player);
+    renderList.AddRange(trees);
+    renderList.AddRange(bushes);
+
+    foreach (var item in renderList.OrderBy(x =>
     {
-        _spriteBatch.Draw(jungleMapTexture, Vector2.Zero, Color.White);
-        player.Draw(_spriteBatch);
-    }
+        if (x is Player p) return p.Position.Y;
+        if (x is TiledIsoEntity e) return e.SortY;
+        return 0f;
+    }   ))
+        {
+        if (item is Player p)
+            p.Draw(_spriteBatch);
+
+        if (item is TiledIsoEntity e)
+            e.Draw(_spriteBatch);
+        }
+        
+    }    
     private void DrawShop() // shop draw logic
     {
         
