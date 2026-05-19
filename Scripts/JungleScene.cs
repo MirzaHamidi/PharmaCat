@@ -196,7 +196,9 @@ namespace PharmaCat.Scripts
         firstGid: 0,
         tileWidth: 122,
         tileHeight: 150,
-        tilesetColumns: 12
+        tilesetColumns: 12,
+        mapPixelWidth: jungleMapTexture.Width,
+        mapPixelHeight: jungleMapTexture.Height
     );
 
     IsoEntityLoader.LoadEntityLayerFromCsv(
@@ -208,7 +210,9 @@ namespace PharmaCat.Scripts
         firstGid: 0,
         tileWidth: 122,
         tileHeight: 150,
-        tilesetColumns: 12
+        tilesetColumns: 12,
+        mapPixelWidth: jungleMapTexture.Width,
+        mapPixelHeight: jungleMapTexture.Height
     );
 }
     }
