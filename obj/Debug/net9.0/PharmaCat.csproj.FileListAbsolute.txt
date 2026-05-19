@@ -51,3 +51,5 @@ C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\PharmaCat\PharmaCat\bin\Debug\net9.
 C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\PharmaCat\PharmaCat\bin\Debug\net9.0\Content\bitkimap.xnb
 C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\PharmaCat\PharmaCat\bin\Debug\net9.0\Content\bitki_agac.csv
 C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\PharmaCat\PharmaCat\bin\Debug\net9.0\Content\bitki_cicek.csv
+C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\PharmaCat\PharmaCat\bin\Debug\net9.0\Content\Sprite-0001.xnb
+C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\PharmaCat\PharmaCat\bin\Debug\net9.0\Content\treeset.xnb
