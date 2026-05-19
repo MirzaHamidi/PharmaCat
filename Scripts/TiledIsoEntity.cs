@@ -10,15 +10,9 @@ namespace PharmaCat.Scripts
         public Vector2 Position;
         public bool IsBush;
         public bool Collected;
+        public float Alpha = 1f;
 
         public float SortY => Position.Y;
-
-        public Rectangle InteractionRect => new Rectangle(
-            (int)Position.X - 35,
-            (int)Position.Y - 30,
-            70,
-            60
-        );
 
         public TiledIsoEntity(Texture2D texture, Rectangle sourceRect, Vector2 position, bool isBush)
         {
@@ -32,18 +26,16 @@ namespace PharmaCat.Scripts
 {
     if (Collected) return;
 
-    Vector2 origin;
-
-    if (SourceRect.Width == Texture.Width && SourceRect.Height == Texture.Height)
-        origin = Vector2.Zero; // full layer PNG
-    else
-        origin = new Vector2(SourceRect.Width / 2f, SourceRect.Height); // tek obje
+    Vector2 origin = new Vector2(
+        SourceRect.Width / 2f,
+        SourceRect.Height
+    );
 
     spriteBatch.Draw(
         Texture,
         Position,
         SourceRect,
-        Color.White,
+        Color.White * Alpha,
         0f,
         origin,
         1f,

@@ -38,10 +38,10 @@ public class Game1 : Game
     private List<TiledIsoEntity> trees = new List<TiledIsoEntity>();
     private List<TiledIsoEntity> bushes = new List<TiledIsoEntity>();
 
-    private Texture2D treeTileset;
-    private Texture2D bushTileset;
+    private Texture2D treeTexture;
+    private Texture2D bushTexture;
 
-    private int herbCount = 0;
+    private int herbCount = 0;  
     private bool cameraInitialized = false;
     public Vector2 targetPosition { get; private set; }
     private Vector2 cameraOffset = new Vector2(0, 0);
@@ -83,24 +83,23 @@ public class Game1 : Game
 
     jungleMapTexture = Content.Load<Texture2D>("mapjungle");
     table = Content.Load<Texture2D>("table");
-    _shopSystem = new ShopSystem();
-    _narratorSystem = new NarratorSystem();
+
+    treeTexture = Texture2D.FromStream(
+    GraphicsDevice,
+    System.IO.File.OpenRead("Content/agacmap.PNG"));
+
+    bushTexture = Texture2D.FromStream(
+    GraphicsDevice,
+    System.IO.File.OpenRead("Content/bitkimap.PNG"));
+
     Vector2 mapCenter = new Vector2(
-        jungleMapTexture.Width / 2f,
-        jungleMapTexture.Height / 2f);
+    jungleMapTexture.Width / 2f,
+    jungleMapTexture.Height / 2f
+    );
 
     player = new Player(Content.Load<Texture2D>("cat"), mapCenter);
-    treeTileset = Texture2D.FromStream(
-    GraphicsDevice,
-    System.IO.File.OpenRead("Content/agacmap.PNG")
-    );
 
-    bushTileset = Texture2D.FromStream(
-    GraphicsDevice,
-    System.IO.File.OpenRead("Content/bitkimap.PNG")
-    );
-
-    CreateTestEntities();
+    CreateWorldEntities();
 
     MyraEnvironment.Game = this;
 
@@ -150,100 +149,121 @@ public class Game1 : Game
 
     base.Update(gameTime);
 }
-    private void UpdateJungle(GameTime gameTime) //jungles update logic
+    private void UpdateJungle(GameTime gameTime)
+{
+    if (jg_Counter > 0)
     {
-        if (jg_Counter > 0)
-        {
-            jg_Counter -= (float)gameTime.ElapsedGameTime.TotalSeconds;
-            if (jg_Counter < 0)
-            {
-                jg_Counter = 0f; 
-                _gameState = GameState.Crafting; // return to main menu after counter reaches 0, this is just for testing day/night cycle, we will replace it with actual day/night cycle later
+        jg_Counter -= (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            }
+        if (jg_Counter < 0)
+        {
+            jg_Counter = 0f;
+            _gameState = GameState.Crafting;
         }
-       
-        int scrollDelta = _input.MouseScrollDelta();
+    }
 
-        if (scrollDelta > 0)
-        {
-            targetZoom += 0.1f;
-        }
-        
-        else if (scrollDelta < 0)
-        {
-            targetZoom -= 0.1f;
-        }
+    int scrollDelta = _input.MouseScrollDelta();
 
-        targetZoom = MathHelper.Clamp(targetZoom, 2f, 2.7f);
+    if (scrollDelta > 0)
+        targetZoom += 0.1f;
+    else if (scrollDelta < 0)
+        targetZoom -= 0.1f;
 
-        camera.Zoom = MathHelper.Lerp(
-            camera.Zoom,
-            targetZoom,
-            8f * (float)gameTime.ElapsedGameTime.TotalSeconds);
+    targetZoom = MathHelper.Clamp(targetZoom, 2f, 2.7f);
 
-        if (_input.RightClick())
-        {
-            Vector2 mouseScreenPos = new Vector2(_input._mouseNow.X, _input._mouseNow.Y);
-            Vector2 mouseWorldPos = camera.ScreenToWorld(mouseScreenPos, GraphicsDevice.Viewport);
+    camera.Zoom = MathHelper.Lerp(
+        camera.Zoom,
+        targetZoom,
+        8f * (float)gameTime.ElapsedGameTime.TotalSeconds
+    );
 
-            player.SetTargetPosition(mouseWorldPos);
-        }
-        if (_input.KeyPressed(Keys.E))
-        {
+    if (_input.RightClick())
+    {
+        Vector2 mouseScreenPos = new Vector2(_input._mouseNow.X, _input._mouseNow.Y);
+        Vector2 mouseWorldPos = camera.ScreenToWorld(mouseScreenPos, GraphicsDevice.Viewport);
+
+        player.SetTargetPosition(mouseWorldPos);
+    }
+
+    player.Update(gameTime);
+
+    UpdateEntityAlpha();
+
+    if (_input.KeyPressed(Keys.E))
+    {
         foreach (var bush in bushes)
         {
-        if (!bush.Collected && Vector2.Distance(player.Position, bush.Position) < 80f)
-        {
-            bush.Collected = true;
-            herbCount++;
-            break;
+            if (!bush.Collected &&
+                Vector2.Distance(player.Position, bush.Position) < 80f)
+            {
+                bush.Collected = true;
+                herbCount++;
+                break;
+            }
         }
-        }
-        
-        }
-        player.Update(gameTime);
+    }
 
-        float smoothSpeed = 3f;
-        float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+    float smoothSpeed = 3f;
+    float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-        Vector2 moveDirection = player.targetPosition - player.Position;
-        if (!cameraInitialized)
-        {
-            camera.Position = player.Position;
-            cameraInitialized = true;
-        }
+    Vector2 moveDirection = player.targetPosition - player.Position;
+
+    if (!cameraInitialized)
+    {
+        camera.Position = player.Position;
+        cameraInitialized = true;
+    }
 
     if (moveDirection.LengthSquared() > 0.01f)
-        {
         moveDirection.Normalize();
-     }
     else
-        {
         moveDirection = Vector2.Zero;
-        }
 
     float lookAheadScreenPixels = 200f;
     float lookAheadWorldDistance = lookAheadScreenPixels / camera.Zoom;
 
     Vector2 targetCameraPosition =
-    player.Position + moveDirection * lookAheadWorldDistance;
+        player.Position + moveDirection * lookAheadWorldDistance;
 
     camera.Position = Vector2.Lerp(
-    camera.Position,
-    targetCameraPosition,
-    smoothSpeed * deltaTime);
-    }
+        camera.Position,
+        targetCameraPosition,
+        smoothSpeed * deltaTime
+    );
+}
 
-   private void CreateTestEntities()
+    private void UpdateEntityAlpha()
+{
+    foreach (var tree in trees)
     {
-    Rectangle treeSource = new Rectangle(0, 0, treeTileset.Width, treeTileset.Height);
-    Rectangle bushSource = new Rectangle(0, 0, bushTileset.Width, bushTileset.Height);
+        bool playerInsideForestZone =
+            player.Position.Y < 950f;
 
-    trees.Add(new TiledIsoEntity(treeTileset, treeSource, Vector2.Zero, false));
-    bushes.Add(new TiledIsoEntity(bushTileset, bushSource, Vector2.Zero, true));
+        tree.Alpha =
+            playerInsideForestZone
+            ? 0.45f
+            : 1f;
     }
 
+    foreach (var bush in bushes)
+    {
+        bool playerInsideBushZone =
+            player.Position.Y < 900f;
+
+        bush.Alpha =
+            playerInsideBushZone
+            ? 0.65f
+            : 1f;
+    }
+}
+    private void CreateWorldEntities()
+{
+    trees.Clear();
+    bushes.Clear();
+
+    LoadEntityLayerFromCsv("Content/bitki_agac.csv", treeTexture, trees, false);
+    LoadEntityLayerFromCsv("Content/bitki_cicek.csv", bushTexture, bushes, true);
+}
     private void UpdateMenu(GameTime gameTime) // main menu update logic
     {
         
@@ -312,7 +332,19 @@ public class Game1 : Game
             _menuDesktop.Render();
         }
     }
+    private Point WorldToIsoGrid(Vector2 worldPos)
+    {
+    int tileWidth = 64;
+    int tileHeight = 32;
 
+    float halfW = tileWidth / 2f;
+    float halfH = tileHeight / 2f;
+
+    int gridX = (int)MathF.Floor((worldPos.X / halfW + worldPos.Y / halfH) / 2f);
+    int gridY = (int)MathF.Floor((worldPos.Y / halfH - worldPos.X / halfW) / 2f);
+
+    return new Point(gridX, gridY);
+    }
     private void DrawJungle()
 {
     _spriteBatch.Draw(jungleMapTexture, Vector2.Zero, Color.White);
@@ -325,19 +357,92 @@ public class Game1 : Game
 
     foreach (var item in renderList.OrderBy(x =>
     {
-        if (x is Player p) return p.Position.Y;
-        if (x is TiledIsoEntity e) return e.SortY;
+        if (x is Player p)
+            return p.Position.Y;
+
+        if (x is TiledIsoEntity e)
+            return e.Position.Y;
+
         return 0f;
-    }   ))
-        {
+    }))
+    {
         if (item is Player p)
             p.Draw(_spriteBatch);
 
         if (item is TiledIsoEntity e)
             e.Draw(_spriteBatch);
+    }
+}
+private void LoadEntityLayerFromCsv(
+    string csvPath,
+    Texture2D texture,
+    List<TiledIsoEntity> targetList,
+    bool isBush)
+{
+    string[] lines = System.IO.File.ReadAllLines(csvPath);
+
+    int tileWidth = 100;
+    int tileHeight = 60;
+
+    for (int y = 0; y < lines.Length; y++)
+    {
+        string[] values = lines[y].Split(',');
+
+        for (int x = 0; x < values.Length; x++)
+        {
+            if (!int.TryParse(values[x], out int gid))
+                continue;
+
+            if (gid == 0)
+            continue;
+
+            
+
+
+            if (!IsEntityTile(gid, isBush))
+                continue;
+
+            float worldX = x * tileWidth;
+
+            if (y % 2 == 1)
+                worldX += tileWidth / 2f;
+
+            float worldY = y * (tileHeight / 2f);
+
+            Vector2 basePosition = new Vector2(
+                worldX + tileWidth / 2f,
+                worldY + tileHeight
+            );
+
+            Rectangle source = new Rectangle(
+                0,
+                0,
+                texture.Width,
+                texture.Height
+            );
+
+            targetList.Add(
+                new TiledIsoEntity(
+                    texture,
+                    source,
+                    basePosition,
+                    isBush
+                )
+            );
         }
-        
-    }    
+    }
+}
+private bool IsEntityTile(int gid, bool isBush)
+{
+    if (isBush)
+    {
+        return gid == 39;
+    }
+    else
+    {
+        return gid == 7;
+    }
+}
     private void DrawShop() // shop draw logic
     {
         

@@ -15,6 +15,14 @@
     <None Remove="Icon.bmp" />
   </ItemGroup>
   <ItemGroup>
+  <None Update="Content\bitki_agac.csv">
+    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+  </None>
+  <None Update="Content\bitki_cicek.csv">
+    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+  </None>
+</ItemGroup>
+  <ItemGroup>
     <EmbeddedResource Include="Icon.ico">
       <LogicalName>Icon.ico</LogicalName>
     </EmbeddedResource>
