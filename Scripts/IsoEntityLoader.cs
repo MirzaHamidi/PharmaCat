@@ -87,7 +87,8 @@ namespace PharmaCat.Scripts.World
                             tilesetTexture,
                             source,
                             basePosition,
-                            isBush
+                            isBush,
+                            localId
                         )
                     );
                 }

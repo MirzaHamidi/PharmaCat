@@ -33,7 +33,7 @@ namespace PharmaCat.Scripts
             }
         }
 
-        public static bool TryCollectBush(
+        public static TiledIsoEntity TryCollectBush(
             Player player,
             List<TiledIsoEntity> bushes)
         {
@@ -43,11 +43,11 @@ namespace PharmaCat.Scripts
                     Microsoft.Xna.Framework.Vector2.Distance(player.Position, bush.Position) < 80f)
                 {
                     bush.Collected = true;
-                    return true;
+                    return bush;
                 }
             }
 
-            return false;
+            return null;
         }
     }
 }
