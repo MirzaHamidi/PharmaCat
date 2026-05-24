@@ -33,6 +33,13 @@ public class Game1 : Game
     private GraphicsDeviceManager _graphics; // graphics manager
     private SpriteBatch _spriteBatch; // for drawing sprites
     private InputState _input; // input class call
+    private InventorySystem inventory; // inventory system call
+    
+    private Random random = new Random();
+    private string craftedPotionName = "";
+    private Texture2D pixel;
+    
+    private CraftGreyboxSystem craftGreyboxSystem;
     public Game1()
     {
         _graphics = new GraphicsDeviceManager(this);
@@ -46,9 +53,18 @@ public class Game1 : Game
 
     protected override void Initialize()
     {
-        // TODO: Add your initialization logic here
-        _input = new InputState(); // initialize input
-        base.Initialize();
+
+    _input = new InputState();
+
+    inventory = new InventorySystem();
+
+    inventory.AddHerb("Lavender", 3);
+    inventory.AddHerb("Blue Lotus", 2);
+    inventory.AddHerb("Sage", 1);
+    inventory.AddHerb("Red Poppy", 1);
+
+    base.Initialize();
+
     }
 
     protected override void LoadContent()
@@ -57,11 +73,23 @@ public class Game1 : Game
         font = Content.Load<SpriteFont>("Font");
         _spriteBatch = new SpriteBatch(GraphicsDevice);
         table = Content.Load<Texture2D>("table");
+
+        pixel = new Texture2D(GraphicsDevice, 1, 1);
+        pixel.SetData(new[] { Color.White });
+
+        // Kendi font adını yaz.
+        // Örnek: Content/Fonts/DefaultFont.spritefont
+
+
+        craftGreyboxSystem = new CraftGreyboxSystem(pixel, font, inventory);
         MyraEnvironment.Game = this;
         jungleScene = new JungleScene();
         jungleScene.Load(Content, GraphicsDevice);
         shopScene = new ShopScene();
-        shopScene.Load();
+        shopScene.Load(inventory, () =>
+        {
+        _gameState = GameState.Jungle;
+        });
         mainMenuScene = new MainMenuScene();
         mainMenuScene.Load();
         craftingScene = new CraftingScene();
@@ -114,7 +142,7 @@ public class Game1 : Game
 
             case GameState.Crafting:
                 craftingScene.Update(gameTime);
-
+                craftGreyboxSystem.Update(gameTime);
                 if (craftingScene.GoToShopRequested)
                 {
                     craftingScene.ResetRequest();
@@ -163,6 +191,7 @@ public class Game1 : Game
 
                 _spriteBatch.Begin();
                 craftingScene.Draw(_spriteBatch);
+                craftGreyboxSystem.Draw(_spriteBatch);
                 _spriteBatch.End();
 
                 break;

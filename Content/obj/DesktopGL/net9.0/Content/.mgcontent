@@ -8,7 +8,6 @@
     <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/PharmaCat/PharmaCat/Content/../bin/Debug/net9.0/Content/agacmap.png</File>
     <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/PharmaCat/PharmaCat/Content/../bin/Debug/net9.0/Content/bitkimap.png</File>
     <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/PharmaCat/PharmaCat/Content/../TileSet/PharmaCatTileMap.png</File>
-    <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/PharmaCat/PharmaCat/Content/bitki.PNG</File>
     <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/PharmaCat/PharmaCat/Content/cat.png</File>
     <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/PharmaCat/PharmaCat/Content/Font.spritefont</File>
   </SourceFiles>
@@ -17,7 +16,6 @@
     <File>agacmap.png</File>
     <File>bitkimap.png</File>
     <File>mapjungle.png</File>
-    <File xsi:nil="true" />
     <File xsi:nil="true" />
     <File xsi:nil="true" />
   </DestFiles>

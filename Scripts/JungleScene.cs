@@ -23,10 +23,11 @@ namespace PharmaCat.Scripts
 
         private float targetZoom = 1f;
         private bool cameraInitialized = false;
-        private float jungleCounter = 50f;
+        private float jungleCounter = 25f;
         private int herbCount = 0;
 
         private TiledIsoEntity pendingCollectionBush = null;
+
         private Dictionary<string, int> collectedHerbs = new Dictionary<string, int>()
         {
             { "Lavender", 0 },
@@ -69,55 +70,181 @@ namespace PharmaCat.Scripts
         {
             UpdateCounter(gameTime);
             UpdateZoom(gameTime, input);
+
             UpdatePlayerInput(input, viewport);
 
             player.Update(gameTime);
 
-            // Handle auto-walk and harvest when reaching a targeted bush
-            if (pendingCollectionBush != null)
-            {
-                if (pendingCollectionBush.Collected)
-                {
-                    pendingCollectionBush = null;
-                }
-                else
-                {
-                    float distance = Vector2.Distance(player.Position, pendingCollectionBush.Position);
-                    if (distance < 120f)
-                    {
-                        CollectBush(pendingCollectionBush);
-                        pendingCollectionBush = null;
-                    }
-                }
-            }
+            UpdatePendingCollection();
+            UpdateBushHover(input, viewport);
+            UpdateBushVisuals(gameTime);
+            RemoveDestroyedBushes();
 
             JungleEntityUpdater.UpdateEntityAlpha(player, trees, bushes);
 
             if (input.KeyPressed(Keys.E))
+                TryCollectClosestBush();
+
+            UpdateCamera(gameTime);
+        }
+
+        private void UpdatePlayerInput(InputState input, Viewport viewport)
+        {
+            if (input.RightClick())
             {
-                TiledIsoEntity closestBush = null;
-                float closestDist = float.MaxValue;
-                foreach (var bush in bushes)
+                Vector2 mouseScreenPos = new Vector2(input._mouseNow.X, input._mouseNow.Y);
+                Vector2 mouseWorldPos = camera.ScreenToWorld(mouseScreenPos, viewport);
+
+                player.SetTargetPosition(mouseWorldPos);
+                pendingCollectionBush = null;
+                return;
+            }
+
+            if (input.LeftClick())
+            {
+                Vector2 mouseScreenPos = new Vector2(input._mouseNow.X, input._mouseNow.Y);
+                Vector2 mouseWorldPos = camera.ScreenToWorld(mouseScreenPos, viewport);
+
+                TiledIsoEntity clickedBush = FindClickedBush(mouseWorldPos);
+
+                if (clickedBush != null)
                 {
-                    if (!bush.Collected)
+                    float distance = Vector2.Distance(player.Position, clickedBush.Position);
+
+                    if (distance <= 60f)
                     {
-                        float dist = Vector2.Distance(player.Position, bush.Position);
-                        if (dist < 100f && dist < closestDist)
-                        {
-                            closestDist = dist;
-                            closestBush = bush;
-                        }
+                        CollectBush(clickedBush);
+                        pendingCollectionBush = null;
+                    }
+                    else
+                    {
+                        player.SetTargetPosition(clickedBush.Position);
+                        pendingCollectionBush = clickedBush;
                     }
                 }
-
-                if (closestBush != null)
+                else
                 {
-                    CollectBush(closestBush);
                     pendingCollectionBush = null;
                 }
             }
+        }
 
-            UpdateCamera(gameTime);
+        private TiledIsoEntity FindClickedBush(Vector2 mouseWorldPos)
+        {
+            TiledIsoEntity clickedBush = null;
+
+            foreach (var bush in bushes)
+            {
+                if (bush.Collected || bush.IsCollecting)
+                    continue;
+
+                if (bush.ContainsPoint(mouseWorldPos))
+                {
+                    if (clickedBush == null || bush.Position.Y > clickedBush.Position.Y)
+                    {
+                        clickedBush = bush;
+                    }
+                }
+            }
+
+            return clickedBush;
+        }
+
+        private void UpdatePendingCollection()
+        {
+            if (pendingCollectionBush == null)
+                return;
+
+            if (pendingCollectionBush.Collected || pendingCollectionBush.IsCollecting)
+            {
+                pendingCollectionBush = null;
+                return;
+            }
+
+            float distance = Vector2.Distance(player.Position, pendingCollectionBush.Position);
+
+            if (distance <= 60f)
+            {
+                CollectBush(pendingCollectionBush);
+                pendingCollectionBush = null;
+            }
+        }
+
+        private void TryCollectClosestBush()
+        {
+            TiledIsoEntity closestBush = null;
+            float closestDist = float.MaxValue;
+
+            foreach (var bush in bushes)
+            {
+                if (bush.Collected || bush.IsCollecting)
+                    continue;
+
+                float dist = Vector2.Distance(player.Position, bush.Position);
+
+                if (dist <= 60f && dist < closestDist)
+                {
+                    closestDist = dist;
+                    closestBush = bush;
+                }
+            }
+
+            if (closestBush != null)
+            {
+                CollectBush(closestBush);
+                pendingCollectionBush = null;
+            }
+        }
+
+        private void UpdateBushHover(InputState input, Viewport viewport)
+        {
+            Vector2 mouseScreenPos = new Vector2(input._mouseNow.X, input._mouseNow.Y);
+            Vector2 mouseWorldPos = camera.ScreenToWorld(mouseScreenPos, viewport);
+
+            foreach (var bush in bushes)
+            {
+                if (bush.Collected || bush.IsCollecting)
+                {
+                    bush.TargetScale = 1f;
+                    continue;
+                }
+
+                if (bush.ContainsPoint(mouseWorldPos))
+                    bush.TargetScale = 1.2f;
+                else
+                    bush.TargetScale = 1f;
+            }
+        }
+
+        private void UpdateBushVisuals(GameTime gameTime)
+        {
+            foreach (var bush in bushes)
+            {
+                bush.UpdateVisual(gameTime);
+            }
+        }
+
+        private void RemoveDestroyedBushes()
+        {
+            bushes.RemoveAll(bush => bush.ShouldRemove);
+        }
+
+        private void CollectBush(TiledIsoEntity bush)
+        {
+            if (bush.Collected || bush.IsCollecting)
+                return;
+
+            bush.Collected = true;
+            bush.StartCollectAnimation();
+
+            herbCount++;
+
+            string herbName = bush.GetPlantName();
+
+            if (collectedHerbs.ContainsKey(herbName))
+                collectedHerbs[herbName]++;
+            else
+                collectedHerbs[herbName] = 1;
         }
 
         public void DrawWorld(SpriteBatch spriteBatch, Viewport viewport)
@@ -149,6 +276,7 @@ namespace PharmaCat.Scripts
             );
 
             int uiY = 200;
+
             foreach (var kvp in collectedHerbs)
             {
                 if (kvp.Value > 0)
@@ -159,6 +287,7 @@ namespace PharmaCat.Scripts
                         new Vector2(1600, uiY),
                         Color.White
                     );
+
                     uiY += 40;
                 }
             }
@@ -169,6 +298,13 @@ namespace PharmaCat.Scripts
         public void ResetRequest()
         {
             CraftingRequested = false;
+        }
+
+        public void ResetDay()
+        {
+            jungleCounter = 25f;
+            CraftingRequested = false;
+            pendingCollectionBush = null;
         }
 
         private void UpdateCounter(GameTime gameTime)
@@ -203,69 +339,6 @@ namespace PharmaCat.Scripts
             );
         }
 
-        private void CollectBush(TiledIsoEntity bush)
-        {
-            bush.Collected = true;
-            herbCount++;
-            string herbName = bush.GetPlantName();
-            if (collectedHerbs.ContainsKey(herbName))
-                collectedHerbs[herbName]++;
-            else
-                collectedHerbs[herbName] = 1;
-        }
-
-        private void UpdatePlayerInput(InputState input, Viewport viewport)
-        {
-            // Right-click: Walk and cancel any targeted collection
-            if (input.RightClick())
-            {
-                Vector2 mouseScreenPos = new Vector2(input._mouseNow.X, input._mouseNow.Y);
-                Vector2 mouseWorldPos = camera.ScreenToWorld(mouseScreenPos, viewport);
-                player.SetTargetPosition(mouseWorldPos);
-                pendingCollectionBush = null;
-                return;
-            }
-
-            // Left-click: Click on bush to collect or walk towards it
-            if (input.LeftClick())
-            {
-                Vector2 mouseScreenPos = new Vector2(input._mouseNow.X, input._mouseNow.Y);
-                Vector2 mouseWorldPos = camera.ScreenToWorld(mouseScreenPos, viewport);
-
-                TiledIsoEntity clickedBush = null;
-                // Find front-most active clicked bush (highest Y coordinate)
-                foreach (var bush in bushes)
-                {
-                    if (!bush.Collected && bush.ContainsPoint(mouseWorldPos))
-                    {
-                        if (clickedBush == null || bush.Position.Y > clickedBush.Position.Y)
-                        {
-                            clickedBush = bush;
-                        }
-                    }
-                }
-
-                if (clickedBush != null)
-                {
-                    float distance = Vector2.Distance(player.Position, clickedBush.Position);
-                    if (distance < 120f)
-                    {
-                        CollectBush(clickedBush);
-                        pendingCollectionBush = null;
-                    }
-                    else
-                    {
-                        player.SetTargetPosition(clickedBush.Position);
-                        pendingCollectionBush = clickedBush;
-                    }
-                }
-                else
-                {
-                    pendingCollectionBush = null;
-                }
-            }
-        }
-
         private void UpdateCamera(GameTime gameTime)
         {
             float smoothSpeed = 3f;
@@ -298,37 +371,37 @@ namespace PharmaCat.Scripts
         }
 
         private void CreateWorldEntities()
-{
-    trees.Clear();
-    bushes.Clear();
+        {
+            trees.Clear();
+            bushes.Clear();
 
-    IsoEntityLoader.LoadEntityLayerFromCsv(
-        "Content/bitki_agac.csv",
-        treeTexture,
-        trees,
-        false,
+            IsoEntityLoader.LoadEntityLayerFromCsv(
+                "Content/bitki_agac.csv",
+                treeTexture,
+                trees,
+                false,
 
-        firstGid: 0,
-        tileWidth: 122,
-        tileHeight: 150,
-        tilesetColumns: 12,
-        mapPixelWidth: jungleMapTexture.Width,
-        mapPixelHeight: jungleMapTexture.Height
-    );
+                firstGid: 0,
+                tileWidth: 122,
+                tileHeight: 150,
+                tilesetColumns: 12,
+                mapPixelWidth: jungleMapTexture.Width,
+                mapPixelHeight: jungleMapTexture.Height
+            );
 
-    IsoEntityLoader.LoadEntityLayerFromCsv(
-        "Content/bitki_cicek.csv",
-        bushTexture,
-        bushes,
-        true,
+            IsoEntityLoader.LoadEntityLayerFromCsv(
+                "Content/bitki_cicek.csv",
+                bushTexture,
+                bushes,
+                true,
 
-        firstGid: 0,
-        tileWidth: 114,
-        tileHeight: 125,
-        tilesetColumns: 14,
-        mapPixelWidth: jungleMapTexture.Width,
-        mapPixelHeight: jungleMapTexture.Height
-    );
-}
+                firstGid: 0,
+                tileWidth: 114,
+                tileHeight: 125,
+                tilesetColumns: 14,
+                mapPixelWidth: jungleMapTexture.Width,
+                mapPixelHeight: jungleMapTexture.Height
+            );
+        }
     }
 }
