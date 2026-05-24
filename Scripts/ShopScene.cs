@@ -320,13 +320,15 @@ namespace PharmaCat.Scripts
                 return;
             }
 
+            
+
             string potionName = ExtractPotionName(usePotionBox.SelectedItem.Text);
 
             if (!inventory.RemovePotion(potionName, 1))
             {
-                resultLabel.Text = "You don't have this potion.";
-                RefreshAllUI();
-                return;
+            resultLabel.Text = "You don't have this potion.";
+            RefreshAllUI();
+            return;
             }
 
             if (potionName == "Sleep Potion")

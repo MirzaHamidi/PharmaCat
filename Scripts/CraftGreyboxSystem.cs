@@ -29,12 +29,14 @@ namespace PharmaCat.Scripts
         private Random random = new Random();
 
         private float grindProgress;
-        private float grindNeeded = 100f;
+        private float grindNeeded = 500f;
 
         private bool hasWater;
         private bool hasMixedPotion;
         private Color mixedColor;
         private string craftedPotionName = "";
+        private Rectangle binBox;
+        
 
         private bool shopOpen;
 
@@ -43,7 +45,7 @@ namespace PharmaCat.Scripts
             this.pixel = pixel;
             this.font = font;
             this.inventory = inventory;
-
+            binBox = new Rectangle(1450, 700, 120, 120);
             mortar = new MortarBox(new Rectangle(430, 260, 220, 140));
             waterBox = new Rectangle(700, 270, 90, 90);
 
@@ -62,18 +64,21 @@ namespace PharmaCat.Scripts
             Point mp = mouse.Position;
 
             shopOpen = shopTriggerBox.Contains(mp) || shopPanel.Contains(mp);
-
+            
             HandleJarDrag(mp);
             HandleWater(mp);
             HandleGrinding(gameTime, mp);
             HandleMortarDrag(mp);
+            
 
             if (shopOpen)
                 HandleShopClicks(mp);
         }
 
-        private void CreateJarsFromInventory()
-        {
+        
+
+            private void CreateJarsFromInventory()
+            {
             jars.Clear();
 
             int index = 0;
@@ -81,26 +86,25 @@ namespace PharmaCat.Scripts
             foreach (var herb in inventory.CollectedHerbs)
             {
                 if (herb.Value <= 0)
-                    continue;
+                continue;
 
-                Rectangle rect = new Rectangle(
-                    70 + (index % 6) * 130,
-                    120 + (index / 6) * 140,
-                    100,
-                    115
-                );
+            Rectangle rect = new Rectangle(
+            70 + (index % 6) * 130,
+            120 + (index / 6) * 140,
+            100,
+            115
+            );
 
-                jars.Add(new JarBox(
-                    herb.Key,
-                    GetHerbColor(herb.Key),
-                    rect,
-                    herb.Value
-                ));
+            jars.Add(new JarBox(
+            herb.Key,
+            GetHerbColor(herb.Key),
+            rect,
+            herb.Value
+            ));
 
-                index++;
+            index++;
             }
-        }
-
+            }
         private void CreateGlassesFromInventory()
         {
             glasses.Clear();
@@ -167,6 +171,13 @@ namespace PharmaCat.Scripts
 
             return "Unknown Potion";
         }
+        
+
+        public void RefreshFromInventory()
+        {
+         CreateJarsFromInventory();
+         CreateGlassesFromInventory();
+        }
 
         private void HandleJarDrag(Point mp)
         {
@@ -207,38 +218,44 @@ namespace PharmaCat.Scripts
             }
         }
 
-        private void PourHerb(JarBox jar)
-        {
-            if (jar.Amount <= 0)
-                return;
+        
 
-            if (!mortar.HasBottom)
-            {
-                mortar.BottomColor = jar.HerbColor;
-                mortar.BottomHerbName = jar.Name;
-                mortar.HasBottom = true;
+private void PourHerb(JarBox jar)
+{
+    if (jar.Amount <= 0)
+        return;
 
-                inventory.RemoveHerb(jar.Name, 1);
-                CreateJarsFromInventory();
-            }
-            else if (!mortar.HasTop)
-            {
-                mortar.TopColor = jar.HerbColor;
-                mortar.TopHerbName = jar.Name;
-                mortar.HasTop = true;
+    if (!mortar.HasBottom)
+    {
+        mortar.BottomColor = jar.HerbColor;
+        mortar.BottomHerbName = jar.Name;
+        mortar.HasBottom = true;
 
-                inventory.RemoveHerb(jar.Name, 1);
-                CreateJarsFromInventory();
-            }
-        }
+        inventory.RemoveHerb(jar.Name, 1);
+        CreateJarsFromInventory();
+    }
+    else if (!mortar.HasTop)
+    {
+        mortar.TopColor = jar.HerbColor;
+        mortar.TopHerbName = jar.Name;
+        mortar.HasTop = true;
 
+        inventory.RemoveHerb(jar.Name, 1);
+        CreateJarsFromInventory();
+    }
+}
         private void HandleWater(Point mp)
         {
-            if (LeftPressed() && waterBox.Contains(mp))
-            {
-                if (mortar.HasBottom || mortar.HasTop || hasMixedPotion)
-                    hasWater = true;
-            }
+        if (!LeftPressed())
+        return;
+
+        if (!waterBox.Contains(mp))
+        return;
+
+        if (!mortar.HasBottom || !mortar.HasTop)
+        return;
+
+        hasWater = true;
         }
 
         private void HandleGrinding(GameTime gameTime, Point mp)
@@ -272,91 +289,99 @@ namespace PharmaCat.Scripts
         }
 
         private void HandleMortarDrag(Point mp)
+{
+    if (LeftPressed() && mortar.Bounds.Contains(mp) && hasMixedPotion)
+        draggingMortar = true;
+
+    if (draggingMortar && LeftReleased())
+    {
+        if (binBox.Contains(mp))
         {
-            if (LeftPressed() && mortar.Bounds.Contains(mp) && hasMixedPotion)
-                draggingMortar = true;
+            hasMixedPotion = false;
+            hasWater = false;
+            mixedColor = Color.Transparent;
+            craftedPotionName = "";
+            grindProgress = 0f;
 
-            if (draggingMortar && LeftReleased())
+            draggingMortar = false;
+            return;
+        }
+
+        foreach (var glass in glasses)
+        {
+            if (glass.Bounds.Contains(mp) && !glass.IsFilled)
             {
-                foreach (var glass in glasses)
-                {
-                    if (glass.Bounds.Contains(mp) && !glass.IsFilled)
-                    {
-                        glass.IsFilled = true;
-                        glass.FillColor = mixedColor;
-                        glass.PotionName = craftedPotionName;
+                glass.IsFilled = true;
+                glass.FillColor = mixedColor;
+                glass.PotionName = craftedPotionName;
 
-                        inventory.AddPotion(craftedPotionName, 1);
+                inventory.AddPotion(craftedPotionName, 1);
 
-                        hasMixedPotion = false;
-                        hasWater = false;
-                        mixedColor = Color.Transparent;
-                        craftedPotionName = "";
+                if (inventory.EmptyBottleCount > 0)
+                    inventory.EmptyBottleCount--;
 
-                        break;
-                    }
-                }
+                CreateGlassesFromInventory();
 
-                draggingMortar = false;
+                hasMixedPotion = false;
+                hasWater = false;
+                mixedColor = Color.Transparent;
+                craftedPotionName = "";
+
+                break;
             }
         }
 
+        draggingMortar = false;
+    }
+}
+        
         private void HandleShopClicks(Point mp)
         {
             if (!LeftPressed())
                 return;
 
             string[] herbNames =
-{
-    "Lavender",
-    "Blue Lotus",
-    "Love Rose",
-    "Anti-Curse Clover",
-    "Sage",
-    "Red Poppy",
-    "Marigold"
-};
+                {
+                "Lavender",
+                "Blue Lotus",
+                "Love Rose",
+                "Anti-Curse Clover",
+                "Sage",
+                "Red Poppy",
+                "Marigold"
+                };
 
-for (int i = 0; i < herbNames.Length; i++)
-{
-    Rectangle herbButton = new Rectangle(
-        shopPanel.X + 30 + (i % 4) * 190,
-        shopPanel.Y + 55 + (i / 4) * 55,
-        170,
-        45
-    );
+        for (int i = 0; i < herbNames.Length; i++)
+        {
+            Rectangle herbButton = new Rectangle(
+            shopPanel.X + 30 + (i % 4) * 190,
+            shopPanel.Y + 55 + (i / 4) * 55, 170,45);
 
-    if (herbButton.Contains(mp) && inventory.SpendMoney(15))
-    {
-        inventory.AddHerb(herbNames[i], 1);
-        CreateJarsFromInventory();
-    }
-}
+        if (herbButton.Contains(mp) && inventory.SpendMoney(15))
+        {
+            inventory.AddHerb(herbNames[i], 1);
+            CreateJarsFromInventory();
+        }
+        }
 
-Rectangle buyBottle = new Rectangle(
-    shopPanel.X + 30,
-    shopPanel.Y + 170,
-    170,
-    45
-);
+        Rectangle buyBottle = new Rectangle(
+        shopPanel.X + 30,
+        shopPanel.Y + 170, 170, 45);
 
-Rectangle buyMortar = new Rectangle(
-    shopPanel.X + 240,
-    shopPanel.Y + 170,
-    220,
-    45
-);
+        Rectangle buyMortar = new Rectangle(
+        shopPanel.X + 240,
+        shopPanel.Y + 170, 220, 45);
 
-if (buyBottle.Contains(mp) && inventory.SpendMoney(25))
-{
-    inventory.EmptyBottleCount++;
-    CreateGlassesFromInventory();
-}
+        if (buyBottle.Contains(mp) && inventory.SpendMoney(25))
+        {
+            inventory.EmptyBottleCount++;
+            CreateGlassesFromInventory();
+        }
 
-if (buyMortar.Contains(mp) && inventory.SpendMoney(80))
-{
-    inventory.MortarLevel++;
-}
+        if (buyMortar.Contains(mp) && inventory.SpendMoney(80))
+        {
+            inventory.MortarLevel++;
+        }
         }
 
         private Color Mix(Color a, Color b)
@@ -377,6 +402,8 @@ if (buyMortar.Contains(mp) && inventory.SpendMoney(80))
             DrawWater(spriteBatch);
             DrawGlasses(spriteBatch);
             DrawCraftedPotions(spriteBatch);
+            DrawBin(spriteBatch);
+            
 
             if (shopOpen)
                 DrawShop(spriteBatch);
@@ -508,6 +535,14 @@ if (buyMortar.Contains(mp) && inventory.SpendMoney(80))
                 y += 25;
             }
         }
+
+        private void DrawBin(SpriteBatch sb)
+{
+    DrawBox(sb, binBox, Color.DarkRed);
+    sb.DrawString(font, "TRASH", new Vector2(binBox.X + 25, binBox.Y + 45), Color.White);
+}
+
+
 
         private void DrawShopTrigger(SpriteBatch sb)
         {

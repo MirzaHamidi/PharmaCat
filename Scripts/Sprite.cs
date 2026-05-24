@@ -20,7 +20,7 @@ namespace PharmaCat.Scripts
         public Vector2 Origin => new Vector2(texture.Width / 2f, texture.Height / 2f);
         public float Alpha = 1f;
 
-        public Rectangle Rect // Collision rectangle
+        public Rectangle Rect 
         {
             get
             {

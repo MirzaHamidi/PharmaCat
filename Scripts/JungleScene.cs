@@ -28,43 +28,40 @@ namespace PharmaCat.Scripts
 
         private TiledIsoEntity pendingCollectionBush = null;
 
-        private Dictionary<string, int> collectedHerbs = new Dictionary<string, int>()
-        {
-            { "Lavender", 0 },
-            { "Blue Lotus", 0 },
-            { "Love Rose", 0 },
-            { "Anti-Curse Clover", 0 },
-            { "Sage", 0 },
-            { "Red Poppy", 0 },
-            { "Marigold", 0 }
-        };
-
+       
         public bool CraftingRequested { get; private set; }
 
-        public void Load(ContentManager content, GraphicsDevice graphicsDevice)
-        {
-            jungleMapTexture = content.Load<Texture2D>("mapjungle");
 
-            treeTexture = Texture2D.FromStream(
-                graphicsDevice,
-                System.IO.File.OpenRead("Content/treeset.png")
-            );
+private InventorySystem inventory;
 
-            bushTexture = Texture2D.FromStream(
-                graphicsDevice,
-                System.IO.File.OpenRead("Content/bitki.png")
-            );
 
-            Vector2 mapCenter = new Vector2(
-                jungleMapTexture.Width / 2f,
-                jungleMapTexture.Height / 2f
-            );
+public void Load(ContentManager content, GraphicsDevice graphicsDevice, InventorySystem inventory)
+{
+    this.inventory = inventory;
 
-            player = new Player(content.Load<Texture2D>("cat"), mapCenter);
-            camera = new Camera2D();
+    jungleMapTexture = content.Load<Texture2D>("mapjungle");
 
-            CreateWorldEntities();
-        }
+    treeTexture = Texture2D.FromStream(
+        graphicsDevice,
+        System.IO.File.OpenRead("Content/treeset.png")
+    );
+
+    bushTexture = Texture2D.FromStream(
+        graphicsDevice,
+        System.IO.File.OpenRead("Content/bitki.png")
+    );
+
+    Vector2 mapCenter = new Vector2(
+        jungleMapTexture.Width / 2f,
+        jungleMapTexture.Height / 2f
+    );
+
+    player = new Player(content.Load<Texture2D>("cat"), mapCenter);
+    camera = new Camera2D();
+
+    CreateWorldEntities();
+}
+        
 
         public void Update(GameTime gameTime, InputState input, Viewport viewport)
         {
@@ -87,6 +84,8 @@ namespace PharmaCat.Scripts
 
             UpdateCamera(gameTime);
         }
+
+
 
         private void UpdatePlayerInput(InputState input, Viewport viewport)
         {
@@ -229,24 +228,20 @@ namespace PharmaCat.Scripts
             bushes.RemoveAll(bush => bush.ShouldRemove);
         }
 
+
         private void CollectBush(TiledIsoEntity bush)
         {
-            if (bush.Collected || bush.IsCollecting)
-                return;
-
-            bush.Collected = true;
-            bush.StartCollectAnimation();
-
-            herbCount++;
+            if (bush == null)
+            return;
 
             string herbName = bush.GetPlantName();
 
-            if (collectedHerbs.ContainsKey(herbName))
-                collectedHerbs[herbName]++;
-            else
-                collectedHerbs[herbName] = 1;
-        }
+            inventory.AddHerb(herbName, 1);
 
+            bush.StartCollectAnimation();
+
+            herbCount++;
+        }
         public void DrawWorld(SpriteBatch spriteBatch, Viewport viewport)
         {
             spriteBatch.Begin(transformMatrix: camera.GetViewMatrix(viewport));
@@ -277,7 +272,7 @@ namespace PharmaCat.Scripts
 
             int uiY = 200;
 
-            foreach (var kvp in collectedHerbs)
+            foreach (var kvp in inventory.CollectedHerbs)
             {
                 if (kvp.Value > 0)
                 {
@@ -302,7 +297,7 @@ namespace PharmaCat.Scripts
 
         public void ResetDay()
         {
-            jungleCounter = 25f;
+            jungleCounter = 60f;
             CraftingRequested = false;
             pendingCollectionBush = null;
         }

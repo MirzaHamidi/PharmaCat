@@ -61,6 +61,11 @@ namespace PharmaCat.Scripts
             return true;
         }
 
+        public void AddMoney(int amount)
+        {
+            Money += amount;
+        }
+
         public bool SpendMoney(int price)
         {
             if (Money < price)
@@ -68,11 +73,6 @@ namespace PharmaCat.Scripts
 
             Money -= price;
             return true;
-        }
-
-        public void AddMoney(int amount)
-        {
-            Money += amount;
         }
     }
 }

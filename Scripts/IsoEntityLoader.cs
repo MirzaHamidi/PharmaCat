@@ -21,7 +21,7 @@ namespace PharmaCat.Scripts.World
         {
             string[] lines = File.ReadAllLines(csvPath);
 
-            // Count actual data rows and columns from the CSV
+            
             int csvRows = 0;
             int csvCols = 0;
             foreach (string line in lines)
@@ -34,9 +34,7 @@ namespace PharmaCat.Scripts.World
                     csvCols = colCount;
             }
 
-            // Calculate tile dimensions from map image size and CSV grid
-            // Staggered iso: width = cols * tileW + tileW/2 = (cols + 0.5) * tileW
-            // Staggered iso: height = (rows - 1) * (tileH/2) + tileH = (rows + 1) * tileH / 2
+            
             float mapTileWidth = mapPixelWidth / (csvCols + 0.5f);
             float mapTileHeight = mapPixelHeight * 2f / (csvRows + 1f);
 

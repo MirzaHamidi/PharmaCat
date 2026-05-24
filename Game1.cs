@@ -58,10 +58,6 @@ public class Game1 : Game
 
     inventory = new InventorySystem();
 
-    inventory.AddHerb("Lavender", 3);
-    inventory.AddHerb("Blue Lotus", 2);
-    inventory.AddHerb("Sage", 1);
-    inventory.AddHerb("Red Poppy", 1);
 
     base.Initialize();
 
@@ -77,17 +73,18 @@ public class Game1 : Game
         pixel = new Texture2D(GraphicsDevice, 1, 1);
         pixel.SetData(new[] { Color.White });
 
-        // Kendi font adını yaz.
-        // Örnek: Content/Fonts/DefaultFont.spritefont
+        
 
 
         craftGreyboxSystem = new CraftGreyboxSystem(pixel, font, inventory);
         MyraEnvironment.Game = this;
         jungleScene = new JungleScene();
-        jungleScene.Load(Content, GraphicsDevice);
+        jungleScene.Load(Content, GraphicsDevice, inventory);
         shopScene = new ShopScene();
         shopScene.Load(inventory, () =>
         {
+        jungleScene.ResetDay();
+        craftGreyboxSystem.RefreshFromInventory();
         _gameState = GameState.Jungle;
         });
         mainMenuScene = new MainMenuScene();
@@ -128,11 +125,14 @@ public class Game1 : Game
             case GameState.Jungle:
                 jungleScene.Update(gameTime, _input, GraphicsDevice.Viewport);
 
-                if (jungleScene.CraftingRequested)
-                {
-                    jungleScene.ResetRequest();
-                    _gameState = GameState.Crafting;
-                }
+                // Game1.cs içinde Jungle -> Crafting geçişi:
+
+            if (jungleScene.CraftingRequested)
+            {
+                jungleScene.ResetRequest();
+                craftGreyboxSystem.RefreshFromInventory();
+                _gameState = GameState.Crafting;
+            }
 
                 break;
 
