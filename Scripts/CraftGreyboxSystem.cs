@@ -20,8 +20,19 @@ namespace PharmaCat.Scripts
 
         private MortarBox mortar;
         private Rectangle waterBox;
-        private Rectangle shopTriggerBox;
+        private Rectangle binBox;
+        
+        // UI Butonları ve Panelleri
+        private bool shopOpen;
+        private bool recipeBookOpen;
+        
+        private Rectangle recipeBookButton;
+        private Rectangle recipeBookPanel;
+        private Rectangle closeRecipeBookButton;
+        
+        private Rectangle shopButton;
         private Rectangle shopPanel;
+        private Rectangle closeShopButton;
 
         private JarBox draggedJar;
         private bool draggingMortar;
@@ -35,35 +46,33 @@ namespace PharmaCat.Scripts
         private bool hasMixedPotion;
         private Color mixedColor;
         private string craftedPotionName = "";
-        private Rectangle binBox;
-        
-
-        private bool shopOpen;
-
-        // ==========================================
-        // TARİF DEFTERİ UI ELEMANLARI
-        // ==========================================
-        private bool recipeBookOpen;
-        private Rectangle recipeBookButton;
-        private Rectangle recipeBookPanel;
-        private Rectangle closeRecipeBookButton;
 
         public CraftGreyboxSystem(Texture2D pixel, SpriteFont font, InventorySystem inventory)
         {
             this.pixel = pixel;
             this.font = font;
             this.inventory = inventory;
-            binBox = new Rectangle(1450, 700, 120, 120);
-            mortar = new MortarBox(new Rectangle(430, 260, 220, 140));
-            waterBox = new Rectangle(700, 270, 90, 90);
+            
+            // UX DÜZENLEMESİ: Koordinatlar Montaj Hattı mantığına göre baştan ayarlandı
+            
+            // Çöp Kutusu (Sağ alt köşe, oyun alanından uzak)
+            binBox = new Rectangle(1650, 800, 120, 120);
+            
+            // Havan (Ekranın tam ortası, çalışma alanı)
+            mortar = new MortarBox(new Rectangle(750, 380, 250, 160));
+            
+            // Su (Havan çubuğuna çarpmaması için güvenli bir mesafede, sağda)
+            waterBox = new Rectangle(1100, 410, 90, 90); 
 
-            shopTriggerBox = new Rectangle(0, 980, 1920, 70);
-            shopPanel = new Rectangle(250, 760, 900, 200);
-
-            // Tarif defteri buton ve panel ölçüleri (1080p uyumlu)
+            // Tarif defteri buton ve paneli (Sağ üst)
             recipeBookButton = new Rectangle(1650, 30, 230, 55);
             recipeBookPanel = new Rectangle(260, 50, 1400, 920);
             closeRecipeBookButton = new Rectangle(1580, 70, 50, 45);
+
+            // Dükkan (Shop) buton ve paneli (Tarif defterinin yanı)
+            shopButton = new Rectangle(1400, 30, 230, 55); 
+            shopPanel = new Rectangle(460, 240, 1000, 400); 
+            closeShopButton = new Rectangle(1400, 260, 40, 40); 
 
             CreateJarsFromInventory();
             CreateGlassesFromInventory();
@@ -76,7 +85,7 @@ namespace PharmaCat.Scripts
 
             Point mp = mouse.Position;
 
-            // Eğer tarif defteri açıksa, sadece defterin kapanma butonunu dinle, arkadaki dünyayı kilitle
+            // 1. ÖNCELİK: Tarif defteri açıksa
             if (recipeBookOpen)
             {
                 if (LeftPressed() && closeRecipeBookButton.Contains(mp))
@@ -86,29 +95,41 @@ namespace PharmaCat.Scripts
                 return; 
             }
 
-            // Tarif defterini açma butonu kontrolü
+            // 2. ÖNCELİK: Dükkan açıksa
+            if (shopOpen)
+            {
+                if (LeftPressed() && closeShopButton.Contains(mp))
+                {
+                    shopOpen = false;
+                }
+                
+                HandleShopClicks(mp);
+                return; 
+            }
+
+            // Arayüz butonlarını açma kontrolü
             if (LeftPressed() && recipeBookButton.Contains(mp))
             {
                 recipeBookOpen = true;
                 return;
             }
 
-            shopOpen = shopTriggerBox.Contains(mp) || shopPanel.Contains(mp);
+            if (LeftPressed() && shopButton.Contains(mp))
+            {
+                shopOpen = true;
+                return;
+            }
             
+            // Eğer menüler kapalıysa oyun mekanikleri çalışır
             HandleJarDrag(mp);
             HandleWater(mp);
             HandleGrinding(gameTime, mp);
             HandleMortarDrag(mp);
-            
-
-            if (shopOpen)
-                HandleShopClicks(mp);
         }
 
         private void CreateJarsFromInventory()
         {
             jars.Clear();
-
             int index = 0;
 
             foreach (var herb in inventory.CollectedHerbs)
@@ -116,9 +137,10 @@ namespace PharmaCat.Scripts
                 if (herb.Value <= 0)
                     continue;
 
+                // UX DÜZENLEMESİ: Bitkiler ekranın üst kısmına, temiz bir raf gibi dizildi
                 Rectangle rect = new Rectangle(
-                    70 + (index % 6) * 130,
-                    120 + (index / 6) * 140,
+                    150 + (index % 7) * 150, // 7 bitki yan yana sığacak genişlik
+                    100,                     // Sabit yükseklik, masadan yukarıda
                     100,
                     115
                 );
@@ -138,7 +160,6 @@ namespace PharmaCat.Scripts
         {
             glasses.Clear();
 
-            // YENİ DÜZENLEME: Envanterdeki EmptyBottleCount'a göre ekrana şişeleri dizer.
             for (int i = 0; i < inventory.EmptyBottleCount; i++)
             {
                 glasses.Add(new PotionGlassBox(NewGlassPosition(i)));
@@ -147,105 +168,13 @@ namespace PharmaCat.Scripts
 
         private Rectangle NewGlassPosition(int index)
         {
-            int x = 430 + (index % 10) * 80;
-            int y = 520 + (index / 10) * 115;
+            // UX DÜZENLEMESİ: Şişeler havanın çok daha altına (Y: 750) ve ortalanarak yerleştirildi
+            int x = 600 + (index % 6) * 160; 
+            int y = 750 + (index / 6) * 160;
 
             return new Rectangle(x, y, 60, 100);
         }
 
-        private Color GetHerbColor(string herbName)
-        {
-            switch (herbName)
-            {
-                case "Lavender":
-                    return Color.MediumPurple;
-                case "Blue Lotus":
-                    return Color.DeepSkyBlue;
-                case "Love Rose":
-                    return Color.HotPink;
-                case "Anti-Curse Clover":
-                    return Color.LimeGreen;
-                case "Sage":
-                    return Color.DarkSeaGreen;
-                case "Red Poppy":
-                    return Color.Red;
-                case "Marigold":
-                    return Color.Orange;
-                default:
-                    return Color.White;
-            }
-        }
-
-        private string GetPotionResult(string herbA, string herbB)
-        {
-            string key1 = herbA + "+" + herbB;
-            string key2 = herbB + "+" + herbA;
-
-            // ==========================================
-            // 1. ORİJİNAL VE YENİ ÇİFT BİTKİ TARİFLERİ
-            // ==========================================
-            if (key1 == "Lavender+Blue Lotus" || key2 == "Lavender+Blue Lotus")
-                return "Sleep Potion";
-
-            if (key1 == "Love Rose+Lavender" || key2 == "Love Rose+Lavender")
-                return "Love Potion";
-
-            if (key1 == "Anti-Curse Clover+Sage" || key2 == "Anti-Curse Clover+Sage")
-                return "Anti-Curse Potion";
-
-            if (key1 == "Sage+Blue Lotus" || key2 == "Sage+Blue Lotus")
-                return "Memory Potion";
-
-            if (key1 == "Red Poppy+Marigold" || key2 == "Red Poppy+Marigold")
-                return "Pain Relief Potion";
-            
-            if (key1 == "Love Rose+Sage" || key2 == "Love Rose+Sage")
-                return "Persuasion Potion";
-
-            if (key1 == "Lavender+Anti-Curse Clover" || key2 == "Lavender+Anti-Curse Clover") 
-                return "Purification Potion";
-
-            if (key1 == "Lavender+Sage" || key2 == "Lavender+Sage") 
-                return "Relaxation Potion";
-
-            if (key1 == "Lavender+Red Poppy" || key2 == "Lavender+Red Poppy") 
-                return "Soothing Potion";
-
-            if (key1 == "Blue Lotus+Love Rose" || key2 == "Blue Lotus+Love Rose") 
-                return "Mystic Romance Potion";
-
-            if (key1 == "Blue Lotus+Anti-Curse Clover" || key2 == "Blue Lotus+Anti-Curse Clover") 
-                return "Holy Water Potion";
-
-            if (key1 == "Love Rose+Anti-Curse Clover" || key2 == "Love Rose+Anti-Curse Clover") 
-                return "Heart Protection Potion";
-
-            if (key1 == "Love Rose+Red Poppy" || key2 == "Love Rose+Red Poppy") 
-                return "Passion Potion";
-
-            if (key1 == "Anti-Curse Clover+Red Poppy" || key2 == "Anti-Curse Clover+Red Poppy") 
-                return "Vitality Potion";
-
-            if (key1 == "Sage+Red Poppy" || key2 == "Sage+Red Poppy") 
-                return "Focus Potion";
-
-            if (key1 == "Sage+Marigold" || key2 == "Sage+Marigold") 
-                return "Enlightenment Potion";
-
-            // ==========================================
-            // 2. AYNI BİTKİDEN 2 TANE EKLENDİĞİNDEKİ TARİFLER
-            // ==========================================
-            if (key1 == "Lavender+Lavender") return "Calm Potion";
-            if (key1 == "Blue Lotus+Blue Lotus") return "Clarity Potion";
-            if (key1 == "Love Rose+Love Rose") return "Charm Potion";
-            if (key1 == "Anti-Curse Clover+Anti-Curse Clover") return "Ward Potion";
-            if (key1 == "Sage+Sage") return "Wisdom Potion";
-            if (key1 == "Red Poppy+Red Poppy") return "Rage Potion";
-            if (key1 == "Marigold+Marigold") return "Bright Potion";
-
-            return "Unknown Potion";
-        }
-        
         public void RefreshFromInventory()
         {
             CreateJarsFromInventory();
@@ -284,7 +213,9 @@ namespace PharmaCat.Scripts
                 );
 
                 if (dragRect.Intersects(mortar.Bounds))
+                {
                     PourHerb(draggedJar);
+                }
 
                 draggedJar.DragPosition = Vector2.Zero;
                 draggedJar = null;
@@ -318,14 +249,9 @@ namespace PharmaCat.Scripts
 
         private void HandleWater(Point mp)
         {
-            if (!LeftPressed())
-                return;
-
-            if (!waterBox.Contains(mp))
-                return;
-
-            if (!mortar.HasBottom || !mortar.HasTop)
-                return;
+            if (!LeftPressed()) return;
+            if (!waterBox.Contains(mp)) return;
+            if (!mortar.HasBottom || !mortar.HasTop) return;
 
             hasWater = true;
         }
@@ -345,10 +271,7 @@ namespace PharmaCat.Scripts
                     mixedColor = Mix(mortar.BottomColor, mortar.TopColor);
                     hasMixedPotion = true;
 
-                    craftedPotionName = GetPotionResult(
-                        mortar.BottomHerbName,
-                        mortar.TopHerbName
-                    );
+                    craftedPotionName = GetPotionResult(mortar.BottomHerbName, mortar.TopHerbName);
 
                     mortar.HasBottom = false;
                     mortar.HasTop = false;
@@ -363,7 +286,9 @@ namespace PharmaCat.Scripts
         private void HandleMortarDrag(Point mp)
         {
             if (LeftPressed() && mortar.Bounds.Contains(mp) && hasMixedPotion)
+            {
                 draggingMortar = true;
+            }
 
             if (draggingMortar && LeftReleased())
             {
@@ -390,7 +315,9 @@ namespace PharmaCat.Scripts
                         inventory.AddPotion(craftedPotionName, 1);
 
                         if (inventory.EmptyBottleCount > 0)
+                        {
                             inventory.EmptyBottleCount--;
+                        }
 
                         hasMixedPotion = false;
                         hasWater = false;
@@ -410,23 +337,13 @@ namespace PharmaCat.Scripts
             if (!LeftPressed())
                 return;
 
-            string[] herbNames =
-            {
-                "Lavender",
-                "Blue Lotus",
-                "Love Rose",
-                "Anti-Curse Clover",
-                "Sage",
-                "Red Poppy",
-                "Marigold"
-            };
+            string[] herbNames = { "Lavender", "Blue Lotus", "Love Rose", "Anti-Curse Clover", "Sage", "Red Poppy", "Marigold" };
 
+            // Bitki Satın Alma Butonları Kontrolü
             for (int i = 0; i < herbNames.Length; i++)
             {
-                Rectangle herbButton = new Rectangle(
-                    shopPanel.X + 30 + (i % 4) * 190,
-                    shopPanel.Y + 55 + (i / 4) * 55, 170,45);
-
+                Rectangle herbButton = new Rectangle(shopPanel.X + 40 + (i % 4) * 230, shopPanel.Y + 90 + (i / 4) * 80, 210, 55);
+                
                 if (herbButton.Contains(mp) && inventory.SpendMoney(15))
                 {
                     inventory.AddHerb(herbNames[i], 1);
@@ -434,39 +351,78 @@ namespace PharmaCat.Scripts
                 }
             }
 
-            Rectangle buyBottle = new Rectangle(
-                shopPanel.X + 30,
-                shopPanel.Y + 170, 170, 45);
-
-            Rectangle buyMortar = new Rectangle(
-                shopPanel.X + 240,
-                shopPanel.Y + 170, 220, 45);
-
+            // Şişe Satın Alma
+            Rectangle buyBottle = new Rectangle(shopPanel.X + 40, shopPanel.Y + 280, 210, 55);
             if (buyBottle.Contains(mp) && inventory.SpendMoney(25))
             {
                 inventory.EmptyBottleCount++;
                 CreateGlassesFromInventory();
             }
 
+            // Havan (Mortar) Yükseltme
+            Rectangle buyMortar = new Rectangle(shopPanel.X + 270, shopPanel.Y + 280, 250, 55);
             if (buyMortar.Contains(mp) && inventory.SpendMoney(80))
             {
                 inventory.MortarLevel++;
             }
         }
 
+        private Color GetHerbColor(string herbName)
+        {
+            switch (herbName)
+            {
+                case "Lavender": return Color.MediumPurple;
+                case "Blue Lotus": return Color.DeepSkyBlue;
+                case "Love Rose": return Color.HotPink;
+                case "Anti-Curse Clover": return Color.LimeGreen;
+                case "Sage": return Color.DarkSeaGreen;
+                case "Red Poppy": return Color.Red;
+                case "Marigold": return Color.Orange;
+                default: return Color.White;
+            }
+        }
+
+        private string GetPotionResult(string herbA, string herbB)
+        {
+            string key1 = herbA + "+" + herbB;
+            string key2 = herbB + "+" + herbA;
+
+            if (key1 == "Lavender+Blue Lotus" || key2 == "Lavender+Blue Lotus") return "Sleep Potion";
+            if (key1 == "Love Rose+Lavender" || key2 == "Love Rose+Lavender") return "Love Potion";
+            if (key1 == "Anti-Curse Clover+Sage" || key2 == "Anti-Curse Clover+Sage") return "Anti-Curse Potion";
+            if (key1 == "Sage+Blue Lotus" || key2 == "Sage+Blue Lotus") return "Memory Potion";
+            if (key1 == "Red Poppy+Marigold" || key2 == "Red Poppy+Marigold") return "Pain Relief Potion";
+            if (key1 == "Love Rose+Sage" || key2 == "Love Rose+Sage") return "Persuasion Potion";
+            if (key1 == "Lavender+Anti-Curse Clover" || key2 == "Lavender+Anti-Curse Clover") return "Purification Potion";
+            if (key1 == "Lavender+Sage" || key2 == "Lavender+Sage") return "Relaxation Potion";
+            if (key1 == "Lavender+Red Poppy" || key2 == "Lavender+Red Poppy") return "Soothing Potion";
+            if (key1 == "Blue Lotus+Love Rose" || key2 == "Blue Lotus+Love Rose") return "Mystic Romance Potion";
+            if (key1 == "Blue Lotus+Anti-Curse Clover" || key2 == "Blue Lotus+Anti-Curse Clover") return "Holy Water Potion";
+            if (key1 == "Love Rose+Anti-Curse Clover" || key2 == "Love Rose+Anti-Curse Clover") return "Heart Protection Potion";
+            if (key1 == "Love Rose+Red Poppy" || key2 == "Love Rose+Red Poppy") return "Passion Potion";
+            if (key1 == "Anti-Curse Clover+Red Poppy" || key2 == "Anti-Curse Clover+Red Poppy") return "Vitality Potion";
+            if (key1 == "Sage+Red Poppy" || key2 == "Sage+Red Poppy") return "Focus Potion";
+            if (key1 == "Sage+Marigold" || key2 == "Sage+Marigold") return "Enlightenment Potion";
+
+            if (key1 == "Lavender+Lavender") return "Calm Potion";
+            if (key1 == "Blue Lotus+Blue Lotus") return "Clarity Potion";
+            if (key1 == "Love Rose+Love Rose") return "Charm Potion";
+            if (key1 == "Anti-Curse Clover+Anti-Curse Clover") return "Ward Potion";
+            if (key1 == "Sage+Sage") return "Wisdom Potion";
+            if (key1 == "Red Poppy+Red Poppy") return "Rage Potion";
+            if (key1 == "Marigold+Marigold") return "Bright Potion";
+
+            return "Unknown Potion";
+        }
+
         private Color Mix(Color a, Color b)
         {
-            return new Color(
-                (a.R + b.R) / 2,
-                (a.G + b.G) / 2,
-                (a.B + b.B) / 2
-            );
+            return new Color((a.R + b.R) / 2, (a.G + b.G) / 2, (a.B + b.B) / 2);
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
             DrawMoney(spriteBatch);
-            DrawShopTrigger(spriteBatch);
             DrawJars(spriteBatch);
             DrawMortar(spriteBatch);
             DrawWater(spriteBatch);
@@ -474,37 +430,37 @@ namespace PharmaCat.Scripts
             DrawCraftedPotions(spriteBatch);
             DrawBin(spriteBatch);
             
-            // Defteri açma butonunu çiziyoruz
+            // Arayüz Menü Butonları
             DrawBox(spriteBatch, recipeBookButton, Color.DarkSlateGray);
             spriteBatch.DrawString(font, "Recipe Book", new Vector2(recipeBookButton.X + 35, recipeBookButton.Y + 15), Color.White);
 
-            if (shopOpen)
-                DrawShop(spriteBatch);
+            DrawBox(spriteBatch, shopButton, Color.DarkOliveGreen);
+            spriteBatch.DrawString(font, "Open Shop", new Vector2(shopButton.X + 45, shopButton.Y + 15), Color.White);
 
+            // Fareye yapışık sürüklenen iksir
             if (draggingMortar && hasMixedPotion)
             {
                 spriteBatch.Draw(pixel, new Rectangle(mouse.X - 30, mouse.Y - 30, 60, 60), mixedColor);
                 spriteBatch.DrawString(font, craftedPotionName, new Vector2(mouse.X + 35, mouse.Y - 10), Color.White);
             }
 
-            // Eğer defter açıksa hepsinin en üstüne çiziyoruz (Overlay)
+            // Paneller (Eğer açıklarsa)
+            if (shopOpen)
+            {
+                DrawShop(spriteBatch);
+            }
+
             if (recipeBookOpen)
             {
                 DrawRecipeBook(spriteBatch);
             }
         }
 
-        // ==========================================
-        // TARİF DEFTERİNİ EKLEME VE ÇİZME FONKSİYONU
-        // ==========================================
         private void DrawRecipeBook(SpriteBatch sb)
         {
-            // Büyük parşömen/arka plan paneli
             DrawBox(sb, recipeBookPanel, new Color(35, 25, 15, 252)); 
-            
             sb.DrawString(font, "RECIPE BOOK (TARIF DEFTERI)", new Vector2(recipeBookPanel.X + 50, recipeBookPanel.Y + 35), Color.Gold);
             
-            // Kapatma butonu (X)
             DrawBox(sb, closeRecipeBookButton, Color.DarkRed);
             sb.DrawString(font, "X", new Vector2(closeRecipeBookButton.X + 16, closeRecipeBookButton.Y + 10), Color.White);
 
@@ -512,7 +468,6 @@ namespace PharmaCat.Scripts
             int col1X = recipeBookPanel.X + 60;
             int col2X = recipeBookPanel.X + 720;
             
-            // 1. Sütun Tarifleri
             string[] col1Recipes = {
                 "Lavender + Blue Lotus = Sleep Potion",
                 "Love Rose + Lavender = Love Potion",
@@ -528,8 +483,6 @@ namespace PharmaCat.Scripts
                 "Love Rose + Anti-Curse Clover = Heart Protection Potion"
             };
 
-            // 2. Sütun Tarifleri
-            // TÜRKÇE KARAKTER İÇERMEYEN GÜVENLİ BAŞLIK: "BITKILER" 
             string[] col2Recipes = {
                 "Love Rose + Red Poppy = Passion Potion",
                 "Anti-Curse Clover + Red Poppy = Vitality Potion",
@@ -546,18 +499,46 @@ namespace PharmaCat.Scripts
                 "Marigold + Marigold = Bright Potion"
             };
 
-            // 1. Sütunu Çizdirme
             for (int i = 0; i < col1Recipes.Length; i++)
             {
                 sb.DrawString(font, col1Recipes[i], new Vector2(col1X, yStart + i * 45), Color.White);
             }
 
-            // 2. Sütunu Çizdirme
             for (int i = 0; i < col2Recipes.Length; i++)
             {
                 Color textColor = col2Recipes[i].StartsWith("---") ? Color.Gold : Color.White;
                 sb.DrawString(font, col2Recipes[i], new Vector2(col2X, yStart + i * 45), textColor);
             }
+        }
+
+        private void DrawShop(SpriteBatch sb)
+        {
+            DrawBox(sb, shopPanel, new Color(25, 25, 25, 250));
+            sb.DrawString(font, "MERCHANT SHOP", new Vector2(shopPanel.X + 40, shopPanel.Y + 30), Color.Gold);
+
+            DrawBox(sb, closeShopButton, Color.DarkRed);
+            sb.DrawString(font, "X", new Vector2(closeShopButton.X + 11, closeShopButton.Y + 8), Color.White);
+
+            string[] herbNames = { "Lavender", "Blue Lotus", "Love Rose", "Anti-Curse Clover", "Sage", "Red Poppy", "Marigold" };
+
+            // Dükkandaki ürünlerin butonlarını çiz
+            for (int i = 0; i < herbNames.Length; i++)
+            {
+                Rectangle herbButton = new Rectangle(shopPanel.X + 40 + (i % 4) * 230, shopPanel.Y + 90 + (i / 4) * 80, 210, 55);
+                DrawShopButton(sb, herbButton, herbNames[i] + " $15");
+            }
+
+            Rectangle buyBottle = new Rectangle(shopPanel.X + 40, shopPanel.Y + 280, 210, 55);
+            DrawShopButton(sb, buyBottle, "Bottle $25");
+
+            Rectangle buyMortar = new Rectangle(shopPanel.X + 270, shopPanel.Y + 280, 250, 55);
+            DrawShopButton(sb, buyMortar, "Upgrade Mortar $80");
+        }
+
+        private void DrawShopButton(SpriteBatch sb, Rectangle r, string text)
+        {
+            DrawBox(sb, r, Color.DarkOliveGreen);
+            sb.DrawString(font, text, new Vector2(r.X + 15, r.Y + 16), Color.White);
         }
 
         private void DrawMoney(SpriteBatch sb)
@@ -572,9 +553,10 @@ namespace PharmaCat.Scripts
             foreach (var jar in jars)
             {
                 Rectangle r = jar.Bounds;
-
                 if (draggedJar == jar)
+                {
                     r = new Rectangle((int)jar.DragPosition.X, (int)jar.DragPosition.Y, r.Width, r.Height);
+                }
 
                 DrawBox(sb, r, Color.DarkSlateGray);
 
@@ -590,43 +572,24 @@ namespace PharmaCat.Scripts
         {
             DrawBox(sb, mortar.Bounds, Color.Gray);
 
-            Rectangle bowl = new Rectangle(
-                mortar.Bounds.X + 35,
-                mortar.Bounds.Y + 30,
-                mortar.Bounds.Width - 70,
-                mortar.Bounds.Height - 60
-            );
-
+            Rectangle bowl = new Rectangle(mortar.Bounds.X + 35, mortar.Bounds.Y + 30, mortar.Bounds.Width - 70, mortar.Bounds.Height - 60);
             DrawBox(sb, bowl, new Color(255, 255, 255, 80));
 
             Rectangle top = new Rectangle(bowl.X, bowl.Y, bowl.Width, bowl.Height / 2);
             Rectangle bottom = new Rectangle(bowl.X, bowl.Y + bowl.Height / 2, bowl.Width, bowl.Height / 2);
 
-            if (mortar.HasBottom)
-                sb.Draw(pixel, bottom, mortar.BottomColor);
-
-            if (mortar.HasTop)
-                sb.Draw(pixel, top, mortar.TopColor);
-
-            if (hasMixedPotion)
-                sb.Draw(pixel, bowl, mixedColor);
-
-            if (hasWater)
-                sb.Draw(pixel, bowl, new Color(80, 170, 255, 80));
+            if (mortar.HasBottom) sb.Draw(pixel, bottom, mortar.BottomColor);
+            if (mortar.HasTop) sb.Draw(pixel, top, mortar.TopColor);
+            if (hasMixedPotion) sb.Draw(pixel, bowl, mixedColor);
+            if (hasWater) sb.Draw(pixel, bowl, new Color(80, 170, 255, 80));
 
             DrawBox(sb, mortar.Grinder, Color.SaddleBrown);
 
             sb.DrawString(font, "MORTAR", new Vector2(mortar.Bounds.X, mortar.Bounds.Y - 24), Color.White);
-            sb.DrawString(font, "1) Drag herbs  2) Add water  3) Hold pestle  4) Drag mortar to glass",
-                new Vector2(mortar.Bounds.X - 120, mortar.Bounds.Bottom + 8), Color.White);
+            sb.DrawString(font, "1) Drag herbs  2) Add water  3) Hold pestle  4) Drag mortar to glass", new Vector2(mortar.Bounds.X - 120, mortar.Bounds.Bottom + 8), Color.White);
 
             Rectangle barBack = new Rectangle(mortar.Bounds.X, mortar.Bounds.Bottom + 34, mortar.Bounds.Width, 12);
-            Rectangle barFill = new Rectangle(
-                barBack.X,
-                barBack.Y,
-                (int)(barBack.Width * (grindProgress / grindNeeded)),
-                barBack.Height
-            );
+            Rectangle barFill = new Rectangle(barBack.X, barBack.Y, (int)(barBack.Width * (grindProgress / grindNeeded)), barBack.Height);
 
             sb.Draw(pixel, barBack, Color.DarkRed);
             sb.Draw(pixel, barFill, Color.LimeGreen);
@@ -649,34 +612,33 @@ namespace PharmaCat.Scripts
             {
                 DrawBox(sb, glass.Bounds, Color.LightGray);
 
-                Rectangle fill = new Rectangle(
-                    glass.Bounds.X + 10,
-                    glass.Bounds.Y + 35,
-                    glass.Bounds.Width - 20,
-                    glass.Bounds.Height - 45
-                );
+                Rectangle fill = new Rectangle(glass.Bounds.X + 10, glass.Bounds.Y + 35, glass.Bounds.Width - 20, glass.Bounds.Height - 45);
 
                 if (glass.IsFilled)
+                {
                     sb.Draw(pixel, fill, glass.FillColor);
+                }
 
                 string text = glass.IsFilled ? glass.PotionName : "Glass";
-                sb.DrawString(font, text, new Vector2(glass.Bounds.X - 10, glass.Bounds.Bottom + 5), Color.White);
+                
+                // Şişe yazısını tam ortala
+                Vector2 textSize = font.MeasureString(text);
+                float textCenteredX = glass.Bounds.X + (glass.Bounds.Width / 2f) - (textSize.X / 2f);
+                
+                sb.DrawString(font, text, new Vector2(textCenteredX, glass.Bounds.Bottom + 10), Color.White);
             }
         }
 
         private void DrawCraftedPotions(SpriteBatch sb)
         {
-            Vector2 pos = new Vector2(1250, 120);
+            Vector2 pos = new Vector2(1650, 120);
             sb.DrawString(font, "Crafted Potions", pos, Color.Gold);
 
             int y = 150;
-
             foreach (var potion in inventory.CraftedPotions)
             {
-                if (potion.Value <= 0)
-                    continue;
-
-                sb.DrawString(font, $"{potion.Key} x{potion.Value}", new Vector2(1250, y), Color.White);
+                if (potion.Value <= 0) continue;
+                sb.DrawString(font, $"{potion.Key} x{potion.Value}", new Vector2(1650, y), Color.White);
                 y += 25;
             }
         }
@@ -685,66 +647,6 @@ namespace PharmaCat.Scripts
         {
             DrawBox(sb, binBox, Color.DarkRed);
             sb.DrawString(font, "TRASH", new Vector2(binBox.X + 25, binBox.Y + 45), Color.White);
-        }
-
-        private void DrawShopTrigger(SpriteBatch sb)
-        {
-            sb.Draw(pixel, shopTriggerBox, new Color(60, 60, 60, 180));
-            sb.DrawString(font, "Move mouse here to open shop", new Vector2(760, shopTriggerBox.Y + 22), Color.White);
-        }
-
-        private void DrawShop(SpriteBatch sb)
-        {
-            DrawBox(sb, shopPanel, new Color(25, 25, 25, 240));
-
-            sb.DrawString(font, "SHOP", new Vector2(shopPanel.X + 20, shopPanel.Y + 15), Color.Gold);
-
-            string[] herbNames =
-            {
-                "Lavender",
-                "Blue Lotus",
-                "Love Rose",
-                "Anti-Curse Clover",
-                "Sage",
-                "Red Poppy",
-                "Marigold"
-            };
-
-            for (int i = 0; i < herbNames.Length; i++)
-            {
-                Rectangle herbButton = new Rectangle(
-                    shopPanel.X + 30 + (i % 4) * 190,
-                    shopPanel.Y + 55 + (i / 4) * 55,
-                    170,
-                    45
-                );
-
-                DrawShopButton(
-                    sb,
-                    herbButton,
-                    herbNames[i] + " $15"
-                );
-            }
-
-            DrawShopButton(
-                sb,
-                new Rectangle(shopPanel.X + 30, shopPanel.Y + 170, 170, 45),
-                "Bottle $25"
-            );
-
-            DrawShopButton(
-                sb,
-                new Rectangle(shopPanel.X + 240, shopPanel.Y + 170, 220, 45),
-                "Upgrade Mortar $80"
-            );
-
-            
-        }
-
-        private void DrawShopButton(SpriteBatch sb, Rectangle r, string text)
-        {
-            DrawBox(sb, r, Color.DarkOliveGreen);
-            sb.DrawString(font, text, new Vector2(r.X + 8, r.Y + 13), Color.White);
         }
 
         private void DrawBox(SpriteBatch sb, Rectangle r, Color color)
@@ -758,14 +660,12 @@ namespace PharmaCat.Scripts
 
         private bool LeftPressed()
         {
-            return mouse.LeftButton == ButtonState.Pressed &&
-                   oldMouse.LeftButton == ButtonState.Released;
+            return mouse.LeftButton == ButtonState.Pressed && oldMouse.LeftButton == ButtonState.Released;
         }
 
         private bool LeftReleased()
         {
-            return mouse.LeftButton == ButtonState.Released &&
-                   oldMouse.LeftButton == ButtonState.Pressed;
+            return mouse.LeftButton == ButtonState.Released && oldMouse.LeftButton == ButtonState.Pressed;
         }
     }
 

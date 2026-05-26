@@ -45,7 +45,7 @@ namespace PharmaCat.Scripts
 
             moneyLabel = new Label
             {
-                Left = 850,
+                Left = 1400,
                 Top = 40,
                 Width = 500,
                 Height = 40
@@ -53,34 +53,43 @@ namespace PharmaCat.Scripts
 
             inventoryLabel = new Label
             {
-                Left = 1250,
+                Left = 50,
                 Top = 40,
-                Width = 600,
-                Height = 500
+                Width = 400,
+                Height = 800
             };
 
             customerDialogueLabel = new Label
             {
                 Text = currentCustomer.CurrentDialogue,
-                Left = 850,
-                Top = 100,
+                Left = 610, 
+                Top = 150,
                 Width = 700,
                 Height = 120
+            };
+
+            resultLabel = new Label
+            {
+                Text = "",
+                Left = 610,
+                Top = 280,
+                Width = 700,
+                Height = 100
             };
 
             serveButton = new TextButton
             {
                 Text = "Serve Customer",
-                Left = 850,
-                Top = 240,
+                Left = 850, 
+                Top = 400,
                 Width = 220,
                 Height = 55
             };
 
             sellPotionBox = new ComboBox
             {
-                Left = 850,
-                Top = 320,
+                Left = 660,
+                Top = 480,
                 Width = 300,
                 Height = 40,
                 Visible = false
@@ -88,9 +97,9 @@ namespace PharmaCat.Scripts
 
             priceBox = new TextBox
             {
-                Left = 850,
-                Top = 375,
-                Width = 250,
+                Left = 980,
+                Top = 480,
+                Width = 150,
                 Height = 40,
                 Text = "10",
                 Visible = false
@@ -100,7 +109,17 @@ namespace PharmaCat.Scripts
             {
                 Text = "Sell Potion",
                 Left = 850,
-                Top = 435,
+                Top = 550,
+                Width = 220,
+                Height = 55,
+                Visible = false
+            };
+
+            nextCustomerButton = new TextButton
+            {
+                Text = "Next Customer",
+                Left = 850,
+                Top = 630,
                 Width = 220,
                 Height = 55,
                 Visible = false
@@ -109,39 +128,19 @@ namespace PharmaCat.Scripts
             usePotionButton = new TextButton
             {
                 Text = "Use Potion",
-                Left = 1090,
-                Top = 435,
+                Left = 600,
+                Top = 850,
                 Width = 220,
                 Height = 55
             };
 
-            // Ormana Dönüş Butonu: Ekranda kesin görünen Use Potion butonunun hemen yanına hizalandı
             returnToJungleButton = new TextButton
             {
                 Text = "Return to Jungle",
-                Left = 1330,
-                Top = 435,
+                Left = 1100,
+                Top = 850,
                 Width = 220,
                 Height = 55
-            };
-
-            resultLabel = new Label
-            {
-                Text = "",
-                Left = 850,
-                Top = 520,
-                Width = 700,
-                Height = 100
-            };
-
-            nextCustomerButton = new TextButton
-            {
-                Text = "Next Customer",
-                Left = 850,
-                Top = 650,
-                Width = 220,
-                Height = 55,
-                Visible = false
             };
 
             CreateUsePotionPanel();
@@ -188,7 +187,6 @@ namespace PharmaCat.Scripts
                 RefreshAllUI();
             };
 
-            // Butona tıklandığında projedeki hazır sıfırlama işlevini güvenle çağırır
             returnToJungleButton.Click += (s, a) =>
             {
                 goToJungle?.Invoke();
@@ -202,10 +200,7 @@ namespace PharmaCat.Scripts
             panel.Widgets.Add(priceBox);
             panel.Widgets.Add(sellButton);
             panel.Widgets.Add(usePotionButton);
-            
-            // Buton panele ekleniyor
             panel.Widgets.Add(returnToJungleButton);
-
             panel.Widgets.Add(resultLabel);
             panel.Widgets.Add(nextCustomerButton);
             panel.Widgets.Add(usePotionPanel);
@@ -220,10 +215,10 @@ namespace PharmaCat.Scripts
         {
             usePotionPanel = new Panel
             {
-                Left = 650,
-                Top = 250,
+                Left = 710, 
+                Top = 350,
                 Width = 500,
-                Height = 260,
+                Height = 300,
                 Visible = false
             };
 
@@ -238,7 +233,7 @@ namespace PharmaCat.Scripts
 
             usePotionBox = new ComboBox
             {
-                Left = 20,
+                Left = 100,
                 Top = 80,
                 Width = 300,
                 Height = 40
@@ -247,8 +242,8 @@ namespace PharmaCat.Scripts
             confirmUsePotionButton = new TextButton
             {
                 Text = "Use Selected Potion",
-                Left = 20,
-                Top = 145,
+                Left = 40,
+                Top = 180,
                 Width = 230,
                 Height = 55
             };
@@ -256,9 +251,9 @@ namespace PharmaCat.Scripts
             var closeButton = new TextButton
             {
                 Text = "Close",
-                Left = 270,
-                Top = 145,
-                Width = 130,
+                Left = 290,
+                Top = 180,
+                Width = 150,
                 Height = 55
             };
 
@@ -347,27 +342,55 @@ namespace PharmaCat.Scripts
 
             if (!inventory.RemovePotion(potionName, 1))
             {
-            resultLabel.Text = "You don't have this potion.";
-            RefreshAllUI();
-            return;
-            }
-
-            if (potionName == "Sleep Potion")
-            {
-                resultLabel.Text = "You used Sleep Potion. The day ends.";
+                resultLabel.Text = "You don't have this potion.";
                 RefreshAllUI();
-                goToJungle?.Invoke();
                 return;
             }
 
-            if (potionName == "Persuasion Potion")
+            // ==========================================
+            // YENİ İKSİR ETKİLERİ SİSTEMİ BAŞLIYOR
+            // ==========================================
+            switch (potionName)
             {
-                persuasionActive = true;
-                resultLabel.Text = "Persuasion active. You can push a wrong potion at a higher price.";
-            }
-            else
-            {
-                resultLabel.Text = potionName + " used, but it has no shop effect yet.";
+                case "Sleep Potion":
+                    resultLabel.Text = "You used Sleep Potion. The day ends.";
+                    RefreshAllUI();
+                    goToJungle?.Invoke();
+                    return; // Günü bitirdiği için hemen return atıyoruz
+
+                case "Persuasion Potion":
+                    persuasionActive = true;
+                    resultLabel.Text = "Persuasion active. You can push a wrong potion at a higher price.";
+                    break;
+
+                case "Charm Potion":
+                    persuasionActive = true;
+                    resultLabel.Text = "Extreme Charm! Your persuasion skills are through the roof.";
+                    break;
+
+                case "Clarity Potion":
+                    inventory.AddMoney(50); // Direkt para ekler
+                    resultLabel.Text = "Absolute clarity! You suddenly remembered where you hid $50.";
+                    break;
+
+                case "Wisdom Potion":
+                    inventory.MortarLevel++; // Havan seviyesi atlatır
+                    resultLabel.Text = "You feel incredibly wise. Your Mortar Level permanently increased!";
+                    break;
+
+                case "Holy Water Potion":
+                    inventory.EmptyBottleCount += 3; // 3 tane boş şişe hediye eder
+                    resultLabel.Text = "Holy light fills the room! You mysteriously found 3 Empty Bottles.";
+                    break;
+
+                case "Calm Potion":
+                    resultLabel.Text = "Ah, a deep breath. You feel relaxed, but nothing special happened.";
+                    break;
+
+                default:
+                    // Eğer henüz bir güç tanımlamadığımız bir iksir kullanılırsa bu yazı çıkar
+                    resultLabel.Text = potionName + " used, but it has no shop effect yet.";
+                    break;
             }
 
             usePotionPanel.Visible = false;
