@@ -94,3 +94,15 @@ C:\Users\hp\Documents\PharmaCat\obj\Debug\net9.0\refint\PharmaCat.dll
 C:\Users\hp\Documents\PharmaCat\obj\Debug\net9.0\PharmaCat.pdb
 C:\Users\hp\Documents\PharmaCat\obj\Debug\net9.0\PharmaCat.genruntimeconfig.cache
 C:\Users\hp\Documents\PharmaCat\obj\Debug\net9.0\ref\PharmaCat.dll
+C:\Users\hp\Documents\PharmaCat\bin\Debug\net9.0\Content\Anti_curse.png
+C:\Users\hp\Documents\PharmaCat\bin\Debug\net9.0\Content\backgroundtry.png
+C:\Users\hp\Documents\PharmaCat\bin\Debug\net9.0\Content\blue_lotus.png
+C:\Users\hp\Documents\PharmaCat\bin\Debug\net9.0\Content\glass.png
+C:\Users\hp\Documents\PharmaCat\bin\Debug\net9.0\Content\grinder.png
+C:\Users\hp\Documents\PharmaCat\bin\Debug\net9.0\Content\levander.png
+C:\Users\hp\Documents\PharmaCat\bin\Debug\net9.0\Content\loverose.png
+C:\Users\hp\Documents\PharmaCat\bin\Debug\net9.0\Content\marigold.png
+C:\Users\hp\Documents\PharmaCat\bin\Debug\net9.0\Content\mortar.png
+C:\Users\hp\Documents\PharmaCat\bin\Debug\net9.0\Content\redpoppy.png
+C:\Users\hp\Documents\PharmaCat\bin\Debug\net9.0\Content\sage.png
+C:\Users\hp\Documents\PharmaCat\bin\Debug\net9.0\Content\trash.png
