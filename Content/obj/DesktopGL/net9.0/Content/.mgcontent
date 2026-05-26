@@ -4,17 +4,19 @@
   <Platform>DesktopGL</Platform>
   <Config />
   <SourceFiles>
-    <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/PharmaCat/PharmaCat/Content/../../../../table.png</File>
-    <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/PharmaCat/PharmaCat/Content/../bin/Debug/net9.0/Content/agacmap.png</File>
-    <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/PharmaCat/PharmaCat/Content/../bin/Debug/net9.0/Content/bitkimap.png</File>
-    <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/PharmaCat/PharmaCat/Content/../TileSet/PharmaCatTileMap.png</File>
-    <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/PharmaCat/PharmaCat/Content/cat.png</File>
-    <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/PharmaCat/PharmaCat/Content/Font.spritefont</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/table.png</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/agacmap.png</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/bitkimap.png</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/treeset.png</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/../TileSet/PharmaCatTileMap.png</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/cat.png</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/Font.spritefont</File>
   </SourceFiles>
   <DestFiles>
-    <File>table.png</File>
-    <File>agacmap.png</File>
-    <File>bitkimap.png</File>
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
     <File>mapjungle.png</File>
     <File xsi:nil="true" />
     <File xsi:nil="true" />

@@ -26,10 +26,21 @@ namespace PharmaCat.Scripts
         private TextButton usePotionButton;
         private TextButton confirmUsePotionButton;
         private TextButton nextCustomerButton;
+        
+        // Ormana Dönüş Butonu
+        private TextButton returnToJungleButton;
 
         private Panel usePotionPanel;
 
         private bool persuasionActive;
+        
+        // Jungle'a dönüş isteğini tutan değişken
+        public bool ReturnToJungleRequested { get; private set; }
+
+        public void ResetRequest()
+        {
+           ReturnToJungleRequested = false;
+        }
 
         public void Load(InventorySystem inventory, Action goToJungle)
         {
@@ -112,6 +123,16 @@ namespace PharmaCat.Scripts
                 Height = 55
             };
 
+            // Ormana Dönüş Butonu: Ekranda kesin görünen Use Potion butonunun hemen sağına alındı!
+            returnToJungleButton = new TextButton
+            {
+                Text = "Return to Jungle",
+                Left = 1330, // Use Potion'ın (1090 + 220 genişlik) hemen bitişiğine hizalandı
+                Top = 435,  // Use Potion ile tamamen aynı hizada (Y ekseni kesin çalışıyor)
+                Width = 220,
+                Height = 55
+            };
+
             resultLabel = new Label
             {
                 Text = "",
@@ -175,6 +196,12 @@ namespace PharmaCat.Scripts
                 RefreshAllUI();
             };
 
+            // Ormana Dönüş Butonu Tıklanma Olayı
+            returnToJungleButton.Click += (s, a) =>
+            {
+                ReturnToJungleRequested = true;
+            };
+
             panel.Widgets.Add(moneyLabel);
             panel.Widgets.Add(inventoryLabel);
             panel.Widgets.Add(customerDialogueLabel);
@@ -183,6 +210,10 @@ namespace PharmaCat.Scripts
             panel.Widgets.Add(priceBox);
             panel.Widgets.Add(sellButton);
             panel.Widgets.Add(usePotionButton);
+            
+            // Butonu tam burada, Use Potion'ın hemen ardında ekliyoruz ki Myra layout'u şaşırmasın
+            panel.Widgets.Add(returnToJungleButton); 
+
             panel.Widgets.Add(resultLabel);
             panel.Widgets.Add(nextCustomerButton);
             panel.Widgets.Add(usePotionPanel);
@@ -319,8 +350,6 @@ namespace PharmaCat.Scripts
                 resultLabel.Text = "Choose a potion to use.";
                 return;
             }
-
-            
 
             string potionName = ExtractPotionName(usePotionBox.SelectedItem.Text);
 
