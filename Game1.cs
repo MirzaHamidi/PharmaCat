@@ -11,6 +11,7 @@ using System.Linq;
 using PharmaCat.Scripts.Rendering;
 namespace PharmaCat;
 
+
 public class Game1 : Game
 {
     private enum GameState // these are the scenes of the game, we will switch between them
@@ -124,6 +125,8 @@ public class Game1 : Game
             case GameState.Jungle:
                 jungleScene.Update(gameTime, _input, GraphicsDevice.Viewport);
 
+                // Game1.cs içinde Jungle -> Crafting geçişi:
+
             if (jungleScene.CraftingRequested)
             {
                 jungleScene.ResetRequest();
@@ -135,15 +138,6 @@ public class Game1 : Game
 
             case GameState.Shop:
                 shopScene.Update(gameTime);
-                
-                // YENİ EKLENEN KISIM: Butona basıldığında Jungle'a geçiş yap.
-                // Bu geçişte envanteri (inventory) sıfırlayan veya ResetDay() çağıran 
-                // hiçbir kod olmadığı için elindeki iksirler çantada kalır.
-                if (shopScene.ReturnToJungleRequested) 
-                {
-                    shopScene.ResetRequest();
-                    _gameState = GameState.Jungle;
-                }
                 break;
 
             case GameState.Crafting:

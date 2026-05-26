@@ -27,20 +27,12 @@ namespace PharmaCat.Scripts
         private TextButton confirmUsePotionButton;
         private TextButton nextCustomerButton;
         
-        // Ormana Dönüş Butonu
+        // Ormana Geri Dönüş Butonu
         private TextButton returnToJungleButton;
 
         private Panel usePotionPanel;
 
         private bool persuasionActive;
-        
-        // Jungle'a dönüş isteğini tutan değişken
-        public bool ReturnToJungleRequested { get; private set; }
-
-        public void ResetRequest()
-        {
-           ReturnToJungleRequested = false;
-        }
 
         public void Load(InventorySystem inventory, Action goToJungle)
         {
@@ -123,12 +115,12 @@ namespace PharmaCat.Scripts
                 Height = 55
             };
 
-            // Ormana Dönüş Butonu: Ekranda kesin görünen Use Potion butonunun hemen sağına alındı!
+            // Ormana Dönüş Butonu: Ekranda kesin görünen Use Potion butonunun hemen yanına hizalandı
             returnToJungleButton = new TextButton
             {
                 Text = "Return to Jungle",
-                Left = 1330, // Use Potion'ın (1090 + 220 genişlik) hemen bitişiğine hizalandı
-                Top = 435,  // Use Potion ile tamamen aynı hizada (Y ekseni kesin çalışıyor)
+                Left = 1330,
+                Top = 435,
                 Width = 220,
                 Height = 55
             };
@@ -196,10 +188,10 @@ namespace PharmaCat.Scripts
                 RefreshAllUI();
             };
 
-            // Ormana Dönüş Butonu Tıklanma Olayı
+            // Butona tıklandığında projedeki hazır sıfırlama işlevini güvenle çağırır
             returnToJungleButton.Click += (s, a) =>
             {
-                ReturnToJungleRequested = true;
+                goToJungle?.Invoke();
             };
 
             panel.Widgets.Add(moneyLabel);
@@ -211,8 +203,8 @@ namespace PharmaCat.Scripts
             panel.Widgets.Add(sellButton);
             panel.Widgets.Add(usePotionButton);
             
-            // Butonu tam burada, Use Potion'ın hemen ardında ekliyoruz ki Myra layout'u şaşırmasın
-            panel.Widgets.Add(returnToJungleButton); 
+            // Buton panele ekleniyor
+            panel.Widgets.Add(returnToJungleButton);
 
             panel.Widgets.Add(resultLabel);
             panel.Widgets.Add(nextCustomerButton);

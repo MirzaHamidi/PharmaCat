@@ -23,45 +23,43 @@ namespace PharmaCat.Scripts
 
         private float targetZoom = 1f;
         private bool cameraInitialized = false;
-        private float jungleCounter = 25f;
+        
+        // DEĞİŞİKLİK: Süre başlangıçta 25 saniye olarak ayarlandı
+        private float jungleCounter = 25f; 
         private int herbCount = 0;
 
         private TiledIsoEntity pendingCollectionBush = null;
 
-       
         public bool CraftingRequested { get; private set; }
 
+        private InventorySystem inventory;
 
-private InventorySystem inventory;
+        public void Load(ContentManager content, GraphicsDevice graphicsDevice, InventorySystem inventory)
+        {
+            this.inventory = inventory;
 
+            jungleMapTexture = content.Load<Texture2D>("mapjungle");
 
-public void Load(ContentManager content, GraphicsDevice graphicsDevice, InventorySystem inventory)
-{
-    this.inventory = inventory;
+            treeTexture = Texture2D.FromStream(
+                graphicsDevice,
+                System.IO.File.OpenRead("Content/treeset.png")
+            );
 
-    jungleMapTexture = content.Load<Texture2D>("mapjungle");
+            bushTexture = Texture2D.FromStream(
+                graphicsDevice,
+                System.IO.File.OpenRead("Content/bitki.png")
+            );
 
-    treeTexture = Texture2D.FromStream(
-        graphicsDevice,
-        System.IO.File.OpenRead("Content/treeset.png")
-    );
+            Vector2 mapCenter = new Vector2(
+                jungleMapTexture.Width / 2f,
+                jungleMapTexture.Height / 2f
+            );
 
-    bushTexture = Texture2D.FromStream(
-        graphicsDevice,
-        System.IO.File.OpenRead("Content/bitki.png")
-    );
+            player = new Player(content.Load<Texture2D>("cat"), mapCenter);
+            camera = new Camera2D();
 
-    Vector2 mapCenter = new Vector2(
-        jungleMapTexture.Width / 2f,
-        jungleMapTexture.Height / 2f
-    );
-
-    player = new Player(content.Load<Texture2D>("cat"), mapCenter);
-    camera = new Camera2D();
-
-    CreateWorldEntities();
-}
-        
+            CreateWorldEntities();
+        }
 
         public void Update(GameTime gameTime, InputState input, Viewport viewport)
         {
@@ -84,8 +82,6 @@ public void Load(ContentManager content, GraphicsDevice graphicsDevice, Inventor
 
             UpdateCamera(gameTime);
         }
-
-
 
         private void UpdatePlayerInput(InputState input, Viewport viewport)
         {
@@ -228,7 +224,6 @@ public void Load(ContentManager content, GraphicsDevice graphicsDevice, Inventor
             bushes.RemoveAll(bush => bush.ShouldRemove);
         }
 
-
         private void CollectBush(TiledIsoEntity bush)
         {
             if (bush == null)
@@ -297,7 +292,12 @@ public void Load(ContentManager content, GraphicsDevice graphicsDevice, Inventor
 
         public void ResetDay()
         {
-            jungleCounter = 60f;
+            // DEĞİŞİKLİK: Her yeni güne başlandığında süre 25'e sıfırlanır
+            jungleCounter = 25f; 
+            
+            // YENİ EKLENEN KISIM: Her gün başlangıcında (ormana dönüşte) iksir şişeleri 3 olarak sıfırlanır
+            inventory.EmptyBottleCount = 3; 
+            
             CraftingRequested = false;
             pendingCollectionBush = null;
         }
