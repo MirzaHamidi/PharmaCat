@@ -40,6 +40,14 @@ namespace PharmaCat.Scripts
 
         private bool shopOpen;
 
+        // ==========================================
+        // TARİF DEFTERİ UI ELEMANLARI
+        // ==========================================
+        private bool recipeBookOpen;
+        private Rectangle recipeBookButton;
+        private Rectangle recipeBookPanel;
+        private Rectangle closeRecipeBookButton;
+
         public CraftGreyboxSystem(Texture2D pixel, SpriteFont font, InventorySystem inventory)
         {
             this.pixel = pixel;
@@ -52,6 +60,11 @@ namespace PharmaCat.Scripts
             shopTriggerBox = new Rectangle(0, 980, 1920, 70);
             shopPanel = new Rectangle(250, 760, 900, 200);
 
+            // Tarif defteri buton ve panel ölçüleri (1080p uyumlu)
+            recipeBookButton = new Rectangle(1650, 30, 230, 55);
+            recipeBookPanel = new Rectangle(260, 50, 1400, 920);
+            closeRecipeBookButton = new Rectangle(1580, 70, 50, 45);
+
             CreateJarsFromInventory();
             CreateGlassesFromInventory();
         }
@@ -62,6 +75,23 @@ namespace PharmaCat.Scripts
             mouse = Mouse.GetState();
 
             Point mp = mouse.Position;
+
+            // Eğer tarif defteri açıksa, sadece defterin kapanma butonunu dinle, arkadaki dünyayı kilitle
+            if (recipeBookOpen)
+            {
+                if (LeftPressed() && closeRecipeBookButton.Contains(mp))
+                {
+                    recipeBookOpen = false;
+                }
+                return; 
+            }
+
+            // Tarif defterini açma butonu kontrolü
+            if (LeftPressed() && recipeBookButton.Contains(mp))
+            {
+                recipeBookOpen = true;
+                return;
+            }
 
             shopOpen = shopTriggerBox.Contains(mp) || shopPanel.Contains(mp);
             
@@ -151,6 +181,9 @@ namespace PharmaCat.Scripts
             string key1 = herbA + "+" + herbB;
             string key2 = herbB + "+" + herbA;
 
+            // ==========================================
+            // 1. ORİJİNAL VE YENİ ÇİFT BİTKİ TARİFLERİ
+            // ==========================================
             if (key1 == "Lavender+Blue Lotus" || key2 == "Lavender+Blue Lotus")
                 return "Sleep Potion";
 
@@ -168,6 +201,47 @@ namespace PharmaCat.Scripts
             
             if (key1 == "Love Rose+Sage" || key2 == "Love Rose+Sage")
                 return "Persuasion Potion";
+
+            if (key1 == "Lavender+Anti-Curse Clover" || key2 == "Lavender+Anti-Curse Clover") 
+                return "Purification Potion";
+
+            if (key1 == "Lavender+Sage" || key2 == "Lavender+Sage") 
+                return "Relaxation Potion";
+
+            if (key1 == "Lavender+Red Poppy" || key2 == "Lavender+Red Poppy") 
+                return "Soothing Potion";
+
+            if (key1 == "Blue Lotus+Love Rose" || key2 == "Blue Lotus+Love Rose") 
+                return "Mystic Romance Potion";
+
+            if (key1 == "Blue Lotus+Anti-Curse Clover" || key2 == "Blue Lotus+Anti-Curse Clover") 
+                return "Holy Water Potion";
+
+            if (key1 == "Love Rose+Anti-Curse Clover" || key2 == "Love Rose+Anti-Curse Clover") 
+                return "Heart Protection Potion";
+
+            if (key1 == "Love Rose+Red Poppy" || key2 == "Love Rose+Red Poppy") 
+                return "Passion Potion";
+
+            if (key1 == "Anti-Curse Clover+Red Poppy" || key2 == "Anti-Curse Clover+Red Poppy") 
+                return "Vitality Potion";
+
+            if (key1 == "Sage+Red Poppy" || key2 == "Sage+Red Poppy") 
+                return "Focus Potion";
+
+            if (key1 == "Sage+Marigold" || key2 == "Sage+Marigold") 
+                return "Enlightenment Potion";
+
+            // ==========================================
+            // 2. AYNI BİTKİDEN 2 TANE EKLENDİĞİNDEKİ TARİFLER
+            // ==========================================
+            if (key1 == "Lavender+Lavender") return "Calm Potion";
+            if (key1 == "Blue Lotus+Blue Lotus") return "Clarity Potion";
+            if (key1 == "Love Rose+Love Rose") return "Charm Potion";
+            if (key1 == "Anti-Curse Clover+Anti-Curse Clover") return "Ward Potion";
+            if (key1 == "Sage+Sage") return "Wisdom Potion";
+            if (key1 == "Red Poppy+Red Poppy") return "Rage Potion";
+            if (key1 == "Marigold+Marigold") return "Bright Potion";
 
             return "Unknown Potion";
         }
@@ -315,12 +389,8 @@ namespace PharmaCat.Scripts
 
                         inventory.AddPotion(craftedPotionName, 1);
 
-                        // Şişeyi doldurunca envanterden boş şişe hakkını düşürür
                         if (inventory.EmptyBottleCount > 0)
                             inventory.EmptyBottleCount--;
-
-                        // Bu satırı KALDIRDIK. Doldurulan şişeler ekrandan yok olmasın diye.
-                        // CreateGlassesFromInventory();
 
                         hasMixedPotion = false;
                         hasWater = false;
@@ -404,6 +474,10 @@ namespace PharmaCat.Scripts
             DrawCraftedPotions(spriteBatch);
             DrawBin(spriteBatch);
             
+            // Defteri açma butonunu çiziyoruz
+            DrawBox(spriteBatch, recipeBookButton, Color.DarkSlateGray);
+            spriteBatch.DrawString(font, "Recipe Book", new Vector2(recipeBookButton.X + 35, recipeBookButton.Y + 15), Color.White);
+
             if (shopOpen)
                 DrawShop(spriteBatch);
 
@@ -411,6 +485,78 @@ namespace PharmaCat.Scripts
             {
                 spriteBatch.Draw(pixel, new Rectangle(mouse.X - 30, mouse.Y - 30, 60, 60), mixedColor);
                 spriteBatch.DrawString(font, craftedPotionName, new Vector2(mouse.X + 35, mouse.Y - 10), Color.White);
+            }
+
+            // Eğer defter açıksa hepsinin en üstüne çiziyoruz (Overlay)
+            if (recipeBookOpen)
+            {
+                DrawRecipeBook(spriteBatch);
+            }
+        }
+
+        // ==========================================
+        // TARİF DEFTERİNİ EKLEME VE ÇİZME FONKSİYONU
+        // ==========================================
+        private void DrawRecipeBook(SpriteBatch sb)
+        {
+            // Büyük parşömen/arka plan paneli
+            DrawBox(sb, recipeBookPanel, new Color(35, 25, 15, 252)); 
+            
+            sb.DrawString(font, "RECIPE BOOK (TARIF DEFTERI)", new Vector2(recipeBookPanel.X + 50, recipeBookPanel.Y + 35), Color.Gold);
+            
+            // Kapatma butonu (X)
+            DrawBox(sb, closeRecipeBookButton, Color.DarkRed);
+            sb.DrawString(font, "X", new Vector2(closeRecipeBookButton.X + 16, closeRecipeBookButton.Y + 10), Color.White);
+
+            int yStart = recipeBookPanel.Y + 110;
+            int col1X = recipeBookPanel.X + 60;
+            int col2X = recipeBookPanel.X + 720;
+            
+            // 1. Sütun Tarifleri
+            string[] col1Recipes = {
+                "Lavender + Blue Lotus = Sleep Potion",
+                "Love Rose + Lavender = Love Potion",
+                "Anti-Curse Clover + Sage = Anti-Curse Potion",
+                "Sage + Blue Lotus = Memory Potion",
+                "Red Poppy + Marigold = Pain Relief Potion",
+                "Love Rose + Sage = Persuasion Potion",
+                "Lavender + Anti-Curse Clover = Purification Potion",
+                "Lavender + Sage = Relaxation Potion",
+                "Lavender + Red Poppy = Soothing Potion",
+                "Blue Lotus + Love Rose = Mystic Romance Potion",
+                "Blue Lotus + Anti-Curse Clover = Holy Water Potion",
+                "Love Rose + Anti-Curse Clover = Heart Protection Potion"
+            };
+
+            // 2. Sütun Tarifleri
+            // TÜRKÇE KARAKTER İÇERMEYEN GÜVENLİ BAŞLIK: "BITKILER" 
+            string[] col2Recipes = {
+                "Love Rose + Red Poppy = Passion Potion",
+                "Anti-Curse Clover + Red Poppy = Vitality Potion",
+                "Sage + Red Poppy = Focus Potion",
+                "Sage + Marigold = Enlightenment Potion",
+                "",
+                "--- CONCENTRATED POTIONS (AYNI TUR BITKILER) ---",
+                "Lavender + Lavender = Calm Potion",
+                "Blue Lotus + Blue Lotus = Clarity Potion",
+                "Love Rose + Love Rose = Charm Potion",
+                "Anti-Curse Clover + Anti-Curse Clover = Ward Potion",
+                "Sage + Sage = Wisdom Potion",
+                "Red Poppy + Red Poppy = Rage Potion",
+                "Marigold + Marigold = Bright Potion"
+            };
+
+            // 1. Sütunu Çizdirme
+            for (int i = 0; i < col1Recipes.Length; i++)
+            {
+                sb.DrawString(font, col1Recipes[i], new Vector2(col1X, yStart + i * 45), Color.White);
+            }
+
+            // 2. Sütunu Çizdirme
+            for (int i = 0; i < col2Recipes.Length; i++)
+            {
+                Color textColor = col2Recipes[i].StartsWith("---") ? Color.Gold : Color.White;
+                sb.DrawString(font, col2Recipes[i], new Vector2(col2X, yStart + i * 45), textColor);
             }
         }
 
