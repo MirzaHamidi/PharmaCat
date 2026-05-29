@@ -18,14 +18,13 @@ namespace PharmaCat.Scripts
 
             var panel = new Panel();
 
-            // DÜZENLEME: Go to Shop butonu ekranın alt ortasına (güvenli bölgeye) alındı
             goToShopButton = new TextButton
             {
                 Text = "Go to Shop",
                 Width = 250,
                 Height = 70,
-                Left = 835, // 1920 piksel genişliğin tam ortası
-                Top = 920   // Ekranın alt kısmı
+                Left = 835, 
+                Top = 920   
             };
 
             goToShopButton.Click += (s, a) =>
@@ -45,8 +44,7 @@ namespace PharmaCat.Scripts
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            // DÜZENLEME: Masa grafiği biraz daha aşağıya (Y: 250) kaydırıldı ki havan tam üstüne otursun
-            spriteBatch.Draw(tableTexture, new Vector2(0, 250), Color.White);
+            // Ahşap masa (tableTexture) çizimi kaldırıldı, artık arkada görünmeyecek.
             craftingDesktop?.Render();
         }
 

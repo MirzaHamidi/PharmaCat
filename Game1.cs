@@ -76,7 +76,7 @@ public class Game1 : Game
         
 
 
-        craftGreyboxSystem = new CraftGreyboxSystem(pixel, font, inventory);
+        craftGreyboxSystem = new CraftGreyboxSystem(pixel, font, inventory, Content);
         MyraEnvironment.Game = this;
         jungleScene = new JungleScene();
         jungleScene.Load(Content, GraphicsDevice, inventory);

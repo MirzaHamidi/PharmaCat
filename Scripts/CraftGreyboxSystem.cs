@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Content;
 
 namespace PharmaCat.Scripts
 {
@@ -11,6 +12,11 @@ namespace PharmaCat.Scripts
         private Texture2D pixel;
         private SpriteFont font;
         private InventorySystem inventory;
+
+        // YENİ EKLENEN PNG TEXTURE'LARI
+        private Texture2D texLavender, texBlueLotus, texAntiCurse, texSage;
+        private Texture2D texLoveRose, texRedPoppy, texMarigold;
+        private Texture2D texGlass, texMortar, texGrinder, texTrash;
 
         private MouseState mouse;
         private MouseState oldMouse;
@@ -47,29 +53,34 @@ namespace PharmaCat.Scripts
         private Color mixedColor;
         private string craftedPotionName = "";
 
-        public CraftGreyboxSystem(Texture2D pixel, SpriteFont font, InventorySystem inventory)
+        public CraftGreyboxSystem(Texture2D pixel, SpriteFont font, InventorySystem inventory, ContentManager content)
         {
             this.pixel = pixel;
             this.font = font;
             this.inventory = inventory;
             
-            // UX DÜZENLEMESİ: Koordinatlar Montaj Hattı mantığına göre baştan ayarlandı
+            // FOTOĞRAFLARI YÜKLEME
+            texLavender = content.Load<Texture2D>("levander");
+            texBlueLotus = content.Load<Texture2D>("blue_lotus");
+            texAntiCurse = content.Load<Texture2D>("Anti_curse");
+            texSage = content.Load<Texture2D>("sage");
+            texLoveRose = content.Load<Texture2D>("loverose");
+            texRedPoppy = content.Load<Texture2D>("redpoppy");
+            texMarigold = content.Load<Texture2D>("marigold");
             
-            // Çöp Kutusu (Sağ alt köşe, oyun alanından uzak)
+            texGlass = content.Load<Texture2D>("glass");
+            texMortar = content.Load<Texture2D>("mortar");
+            texGrinder = content.Load<Texture2D>("grinder");
+            texTrash = content.Load<Texture2D>("trash");
+            
             binBox = new Rectangle(1650, 800, 120, 120);
-            
-            // Havan (Ekranın tam ortası, çalışma alanı)
             mortar = new MortarBox(new Rectangle(750, 380, 250, 160));
-            
-            // Su (Havan çubuğuna çarpmaması için güvenli bir mesafede, sağda)
             waterBox = new Rectangle(1100, 410, 90, 90); 
 
-            // Tarif defteri buton ve paneli (Sağ üst)
             recipeBookButton = new Rectangle(1650, 30, 230, 55);
             recipeBookPanel = new Rectangle(260, 50, 1400, 920);
             closeRecipeBookButton = new Rectangle(1580, 70, 50, 45);
 
-            // Dükkan (Shop) buton ve paneli (Tarif defterinin yanı)
             shopButton = new Rectangle(1400, 30, 230, 55); 
             shopPanel = new Rectangle(460, 240, 1000, 400); 
             closeShopButton = new Rectangle(1400, 260, 40, 40); 
@@ -85,7 +96,6 @@ namespace PharmaCat.Scripts
 
             Point mp = mouse.Position;
 
-            // 1. ÖNCELİK: Tarif defteri açıksa
             if (recipeBookOpen)
             {
                 if (LeftPressed() && closeRecipeBookButton.Contains(mp))
@@ -95,7 +105,6 @@ namespace PharmaCat.Scripts
                 return; 
             }
 
-            // 2. ÖNCELİK: Dükkan açıksa
             if (shopOpen)
             {
                 if (LeftPressed() && closeShopButton.Contains(mp))
@@ -107,7 +116,6 @@ namespace PharmaCat.Scripts
                 return; 
             }
 
-            // Arayüz butonlarını açma kontrolü
             if (LeftPressed() && recipeBookButton.Contains(mp))
             {
                 recipeBookOpen = true;
@@ -120,7 +128,6 @@ namespace PharmaCat.Scripts
                 return;
             }
             
-            // Eğer menüler kapalıysa oyun mekanikleri çalışır
             HandleJarDrag(mp);
             HandleWater(mp);
             HandleGrinding(gameTime, mp);
@@ -137,10 +144,9 @@ namespace PharmaCat.Scripts
                 if (herb.Value <= 0)
                     continue;
 
-                // UX DÜZENLEMESİ: Bitkiler ekranın üst kısmına, temiz bir raf gibi dizildi
                 Rectangle rect = new Rectangle(
-                    150 + (index % 7) * 150, // 7 bitki yan yana sığacak genişlik
-                    100,                     // Sabit yükseklik, masadan yukarıda
+                    150 + (index % 7) * 150, 
+                    100,                     
                     100,
                     115
                 );
@@ -168,7 +174,6 @@ namespace PharmaCat.Scripts
 
         private Rectangle NewGlassPosition(int index)
         {
-            // UX DÜZENLEMESİ: Şişeler havanın çok daha altına (Y: 750) ve ortalanarak yerleştirildi
             int x = 600 + (index % 6) * 160; 
             int y = 750 + (index / 6) * 160;
 
@@ -339,7 +344,6 @@ namespace PharmaCat.Scripts
 
             string[] herbNames = { "Lavender", "Blue Lotus", "Love Rose", "Anti-Curse Clover", "Sage", "Red Poppy", "Marigold" };
 
-            // Bitki Satın Alma Butonları Kontrolü
             for (int i = 0; i < herbNames.Length; i++)
             {
                 Rectangle herbButton = new Rectangle(shopPanel.X + 40 + (i % 4) * 230, shopPanel.Y + 90 + (i / 4) * 80, 210, 55);
@@ -351,7 +355,6 @@ namespace PharmaCat.Scripts
                 }
             }
 
-            // Şişe Satın Alma
             Rectangle buyBottle = new Rectangle(shopPanel.X + 40, shopPanel.Y + 280, 210, 55);
             if (buyBottle.Contains(mp) && inventory.SpendMoney(25))
             {
@@ -359,11 +362,25 @@ namespace PharmaCat.Scripts
                 CreateGlassesFromInventory();
             }
 
-            // Havan (Mortar) Yükseltme
             Rectangle buyMortar = new Rectangle(shopPanel.X + 270, shopPanel.Y + 280, 250, 55);
             if (buyMortar.Contains(mp) && inventory.SpendMoney(80))
             {
                 inventory.MortarLevel++;
+            }
+        }
+
+        private Texture2D GetJarTexture(string herbName)
+        {
+            switch (herbName)
+            {
+                case "Lavender": return texLavender;
+                case "Blue Lotus": return texBlueLotus;
+                case "Anti-Curse Clover": return texAntiCurse;
+                case "Sage": return texSage;
+                case "Love Rose": return texLoveRose;
+                case "Red Poppy": return texRedPoppy;
+                case "Marigold": return texMarigold;
+                default: return texLavender;
             }
         }
 
@@ -430,21 +447,18 @@ namespace PharmaCat.Scripts
             DrawCraftedPotions(spriteBatch);
             DrawBin(spriteBatch);
             
-            // Arayüz Menü Butonları
             DrawBox(spriteBatch, recipeBookButton, Color.DarkSlateGray);
             spriteBatch.DrawString(font, "Recipe Book", new Vector2(recipeBookButton.X + 35, recipeBookButton.Y + 15), Color.White);
 
             DrawBox(spriteBatch, shopButton, Color.DarkOliveGreen);
             spriteBatch.DrawString(font, "Open Shop", new Vector2(shopButton.X + 45, shopButton.Y + 15), Color.White);
 
-            // Fareye yapışık sürüklenen iksir
             if (draggingMortar && hasMixedPotion)
             {
                 spriteBatch.Draw(pixel, new Rectangle(mouse.X - 30, mouse.Y - 30, 60, 60), mixedColor);
                 spriteBatch.DrawString(font, craftedPotionName, new Vector2(mouse.X + 35, mouse.Y - 10), Color.White);
             }
 
-            // Paneller (Eğer açıklarsa)
             if (shopOpen)
             {
                 DrawShop(spriteBatch);
@@ -521,7 +535,6 @@ namespace PharmaCat.Scripts
 
             string[] herbNames = { "Lavender", "Blue Lotus", "Love Rose", "Anti-Curse Clover", "Sage", "Red Poppy", "Marigold" };
 
-            // Dükkandaki ürünlerin butonlarını çiz
             for (int i = 0; i < herbNames.Length; i++)
             {
                 Rectangle herbButton = new Rectangle(shopPanel.X + 40 + (i % 4) * 230, shopPanel.Y + 90 + (i / 4) * 80, 210, 55);
@@ -558,32 +571,32 @@ namespace PharmaCat.Scripts
                     r = new Rectangle((int)jar.DragPosition.X, (int)jar.DragPosition.Y, r.Width, r.Height);
                 }
 
-                DrawBox(sb, r, Color.DarkSlateGray);
+                // Gri kutu yerine kavanoz PNG'sini çiziyoruz
+                sb.Draw(GetJarTexture(jar.Name), r, Color.White);
 
-                Rectangle inner = new Rectangle(r.X + 18, r.Y + 28, r.Width - 36, r.Height - 45);
-                sb.Draw(pixel, inner, jar.HerbColor);
-
-                sb.DrawString(font, jar.Name, new Vector2(r.X, r.Y - 20), Color.White);
-                sb.DrawString(font, "x" + jar.Amount, new Vector2(r.X + 32, r.Bottom - 24), Color.White);
+                sb.DrawString(font, jar.Name, new Vector2(r.X, r.Bottom + 5), Color.White);
+                sb.DrawString(font, "x" + jar.Amount, new Vector2(r.X + 35, r.Bottom + 25), Color.White);
             }
         }
 
         private void DrawMortar(SpriteBatch sb)
         {
-            DrawBox(sb, mortar.Bounds, Color.Gray);
+            // Havan PNG'sini çiziyoruz
+            sb.Draw(texMortar, mortar.Bounds, Color.White);
 
-            Rectangle bowl = new Rectangle(mortar.Bounds.X + 35, mortar.Bounds.Y + 30, mortar.Bounds.Width - 70, mortar.Bounds.Height - 60);
-            DrawBox(sb, bowl, new Color(255, 255, 255, 80));
+            // PNG'nin içine sıvıların dolacağı 176x120'lik havuz alanı
+            Rectangle bowl = new Rectangle(mortar.Bounds.X + 37, mortar.Bounds.Y + 10, 176, 120);
 
             Rectangle top = new Rectangle(bowl.X, bowl.Y, bowl.Width, bowl.Height / 2);
             Rectangle bottom = new Rectangle(bowl.X, bowl.Y + bowl.Height / 2, bowl.Width, bowl.Height / 2);
 
-            if (mortar.HasBottom) sb.Draw(pixel, bottom, mortar.BottomColor);
-            if (mortar.HasTop) sb.Draw(pixel, top, mortar.TopColor);
-            if (hasMixedPotion) sb.Draw(pixel, bowl, mixedColor);
-            if (hasWater) sb.Draw(pixel, bowl, new Color(80, 170, 255, 80));
+            if (mortar.HasBottom) sb.Draw(pixel, bottom, mortar.BottomColor * 0.8f);
+            if (mortar.HasTop) sb.Draw(pixel, top, mortar.TopColor * 0.8f);
+            if (hasMixedPotion) sb.Draw(pixel, bowl, mixedColor * 0.8f);
+            if (hasWater) sb.Draw(pixel, bowl, new Color(80, 170, 255, 0.5f));
 
-            DrawBox(sb, mortar.Grinder, Color.SaddleBrown);
+            // Öğütme çubuğu PNG'si
+            sb.Draw(texGrinder, mortar.Grinder, Color.White);
 
             sb.DrawString(font, "MORTAR", new Vector2(mortar.Bounds.X, mortar.Bounds.Y - 24), Color.White);
             sb.DrawString(font, "1) Drag herbs  2) Add water  3) Hold pestle  4) Drag mortar to glass", new Vector2(mortar.Bounds.X - 120, mortar.Bounds.Bottom + 8), Color.White);
@@ -603,29 +616,35 @@ namespace PharmaCat.Scripts
         private void DrawWater(SpriteBatch sb)
         {
             DrawBox(sb, waterBox, Color.CornflowerBlue);
-            sb.DrawString(font, "Water", new Vector2(waterBox.X + 8, waterBox.Y - 22), Color.White);
+            sb.DrawString(font, "Water", new Vector2(waterBox.X + 15, waterBox.Y + 35), Color.White);
         }
 
         private void DrawGlasses(SpriteBatch sb)
         {
             foreach (var glass in glasses)
             {
-                DrawBox(sb, glass.Bounds, Color.LightGray);
-
-                Rectangle fill = new Rectangle(glass.Bounds.X + 10, glass.Bounds.Y + 35, glass.Bounds.Width - 20, glass.Bounds.Height - 45);
+                Rectangle r = glass.Bounds;
 
                 if (glass.IsFilled)
                 {
+                    // Dolu ise arkaya sıvıyı çizip üstüne camı soluklaştırarak ekliyoruz
+                    Rectangle fill = new Rectangle(r.X + 5, r.Y + 20, r.Width - 10, r.Height - 25);
                     sb.Draw(pixel, fill, glass.FillColor);
+                    
+                    sb.Draw(texGlass, r, new Color(180, 180, 180));
+                }
+                else
+                {
+                    // Boş ise direkt cam PNG'si
+                    sb.Draw(texGlass, r, Color.White);
                 }
 
                 string text = glass.IsFilled ? glass.PotionName : "Glass";
                 
-                // Şişe yazısını tam ortala
                 Vector2 textSize = font.MeasureString(text);
-                float textCenteredX = glass.Bounds.X + (glass.Bounds.Width / 2f) - (textSize.X / 2f);
+                float textCenteredX = r.X + (r.Width / 2f) - (textSize.X / 2f);
                 
-                sb.DrawString(font, text, new Vector2(textCenteredX, glass.Bounds.Bottom + 10), Color.White);
+                sb.DrawString(font, text, new Vector2(textCenteredX, r.Bottom + 10), Color.White);
             }
         }
 
@@ -645,8 +664,8 @@ namespace PharmaCat.Scripts
 
         private void DrawBin(SpriteBatch sb)
         {
-            DrawBox(sb, binBox, Color.DarkRed);
-            sb.DrawString(font, "TRASH", new Vector2(binBox.X + 25, binBox.Y + 45), Color.White);
+            // Çöp kutusu PNG'si
+            sb.Draw(texTrash, binBox, Color.White);
         }
 
         private void DrawBox(SpriteBatch sb, Rectangle r, Color color)
