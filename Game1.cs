@@ -11,7 +11,6 @@ using System.Linq;
 using PharmaCat.Scripts.Rendering;
 namespace PharmaCat;
 
-
 public class Game1 : Game
 {
     private enum GameState // these are the scenes of the game, we will switch between them
@@ -40,6 +39,11 @@ public class Game1 : Game
     private Texture2D pixel;
     
     private CraftGreyboxSystem craftGreyboxSystem;
+    
+    // EKLENDİ: Transition Manager
+    private TransitionManager transitionManager;
+    private Texture2D kepenkTexture;
+
     public Game1()
     {
         _graphics = new GraphicsDeviceManager(this);
@@ -53,19 +57,14 @@ public class Game1 : Game
 
     protected override void Initialize()
     {
+        _input = new InputState();
+        inventory = new InventorySystem();
 
-    _input = new InputState();
-
-    inventory = new InventorySystem();
-
-
-    base.Initialize();
-
+        base.Initialize();
     }
 
     protected override void LoadContent()
     {
-
         font = Content.Load<SpriteFont>("Font");
         _spriteBatch = new SpriteBatch(GraphicsDevice);
         table = Content.Load<Texture2D>("table");
@@ -73,27 +72,33 @@ public class Game1 : Game
         pixel = new Texture2D(GraphicsDevice, 1, 1);
         pixel.SetData(new[] { Color.White });
 
-        
-
+        // EKLENDİ: Kepenk PNG'sini yükle ve Geçiş Yöneticisini başlat
+        kepenkTexture = Content.Load<Texture2D>("kepenk");
+        transitionManager = new TransitionManager(pixel, kepenkTexture);
 
         craftGreyboxSystem = new CraftGreyboxSystem(pixel, font, inventory, Content);
         MyraEnvironment.Game = this;
         jungleScene = new JungleScene();
         jungleScene.Load(Content, GraphicsDevice, inventory);
+        
         shopScene = new ShopScene();
         shopScene.Load(inventory, () =>
         {
-        jungleScene.ResetDay();
-        craftGreyboxSystem.RefreshFromInventory();
-        _gameState = GameState.Jungle;
+            // DÜZENLEME: Shop'tan Jungle'a geçerken Kepenk (Shutter) kullan
+            transitionManager.StartTransition(TransitionStyle.Shutter, () =>
+            {
+                jungleScene.ResetDay();
+                craftGreyboxSystem.RefreshFromInventory();
+                _gameState = GameState.Jungle;
+            });
         });
+        
         mainMenuScene = new MainMenuScene();
         mainMenuScene.Load();
         craftingScene = new CraftingScene();
         craftingScene.Load(table);
-
-
     }
+
     protected override void Update(GameTime gameTime)
     {
         _input.Update(); // update input states
@@ -109,7 +114,11 @@ public class Game1 : Game
             Exit();
         }
 
-        switch (_gameState) // in here we assigning different updates for different scenes so game logic will be separated and easier to manage, we will add more scenes later like crafting and shop
+        // Eğer şu an bir geçiş (transition) animasyonu oynuyorsa sahne mekaniklerini dondurabilirsin
+        // veya arkada akmaya devam edebilirler. Biz çalışmasına izin verip, sadece Inputları kısıtlayabiliriz.
+        // Şimdilik sorunsuz akması için Update'leri normal bırakıyoruz.
+
+        switch (_gameState) 
         {
             case GameState.MainMenu:
                 mainMenuScene.Update(gameTime);
@@ -117,23 +126,27 @@ public class Game1 : Game
                 if (mainMenuScene.StartRequested)
                 {
                     mainMenuScene.ResetRequest();
-                    _gameState = GameState.Jungle;
+                    // Main Menu -> Jungle Geçişi (Kararma)
+                    transitionManager.StartTransition(TransitionStyle.Fade, () => 
+                    {
+                        _gameState = GameState.Jungle;
+                    });
                 }
-
                 break;
 
             case GameState.Jungle:
                 jungleScene.Update(gameTime, _input, GraphicsDevice.Viewport);
 
-                // Game1.cs içinde Jungle -> Crafting geçişi:
-
-            if (jungleScene.CraftingRequested)
-            {
-                jungleScene.ResetRequest();
-                craftGreyboxSystem.RefreshFromInventory();
-                _gameState = GameState.Crafting;
-            }
-
+                if (jungleScene.CraftingRequested)
+                {
+                    jungleScene.ResetRequest();
+                    // DÜZENLEME: Jungle -> Crafting Geçişi (Smooth Kararma)
+                    transitionManager.StartTransition(TransitionStyle.Fade, () =>
+                    {
+                        craftGreyboxSystem.RefreshFromInventory();
+                        _gameState = GameState.Crafting;
+                    });
+                }
                 break;
 
             case GameState.Shop:
@@ -146,24 +159,27 @@ public class Game1 : Game
                 if (craftingScene.GoToShopRequested)
                 {
                     craftingScene.ResetRequest();
-                    _gameState = GameState.Shop;
+                    // DÜZENLEME: Crafting -> Shop Geçişi (Kepenk)
+                    transitionManager.StartTransition(TransitionStyle.Shutter, () =>
+                    {
+                        _gameState = GameState.Shop;
+                    });
                 }
-
                 break;
         }
+
+        // EKLENDİ: Transition Manager'ı Güncelle
+        transitionManager.Update(gameTime);
 
         base.Update(gameTime);
     }
 
-
-
-    protected override void Draw(GameTime gameTime) // in here we assigning different draw calls for different scenes so game rendering will be separated and easier to manage, we will add more scenes later like crafting and shop
+    protected override void Draw(GameTime gameTime) 
     {
         switch (_gameState)
         {
             case GameState.MainMenu:
                 GraphicsDevice.Clear(Color.CornflowerBlue);
-
                 _spriteBatch.Begin();
                 mainMenuScene.Draw();
                 _spriteBatch.End();
@@ -171,33 +187,31 @@ public class Game1 : Game
 
             case GameState.Jungle:
                 GraphicsDevice.Clear(Color.ForestGreen);
-
                 jungleScene.DrawWorld(_spriteBatch, GraphicsDevice.Viewport);
                 jungleScene.DrawUi(_spriteBatch, font);
-
                 break;
 
             case GameState.Shop:
                 GraphicsDevice.Clear(Color.Black);
-
                 _spriteBatch.Begin();
                 shopScene.Draw();
                 _spriteBatch.End();
-
                 break;
 
             case GameState.Crafting:
                 GraphicsDevice.Clear(Color.Black);
-
                 _spriteBatch.Begin();
                 craftingScene.Draw(_spriteBatch);
                 craftGreyboxSystem.Draw(_spriteBatch);
                 _spriteBatch.End();
-
                 break;
         }
 
+        // EKLENDİ: Transition animasyonu bütün sahnelerin "en üstünde" çizilmeli
+        _spriteBatch.Begin();
+        transitionManager.Draw(_spriteBatch);
+        _spriteBatch.End();
+
         base.Draw(gameTime);
     }
-
 }
