@@ -45,12 +45,8 @@ namespace PharmaCat.Scripts
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            // DÜZENLEME: Masa grafiği çizimi kaldırıldı (kötü durduğu için), ancak yapı bozulmadı.
-            // spriteBatch.Draw(tableTexture, new Vector2(0, 250), Color.White);
-            
-            craftingDesktop?.Render();
+        craftingDesktop?.Render();
         }
-
         public void ResetRequest()
         {
             GoToShopRequested = false;

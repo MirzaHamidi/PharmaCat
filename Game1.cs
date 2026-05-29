@@ -29,13 +29,14 @@ public class Game1 : Game
     private SpriteFont font;
     private GameState _gameState = GameState.MainMenu; // start at main menu
     private Texture2D table;
+    private Texture2D Wall;
     private GraphicsDeviceManager _graphics; // graphics manager
     private SpriteBatch _spriteBatch; // for drawing sprites
     private InputState _input; // input class call
     private InventorySystem inventory; // inventory system call
     
     private Random random = new Random();
-    private string craftedPotionName = "";
+    
     private Texture2D pixel;
     
     private CraftGreyboxSystem craftGreyboxSystem;
@@ -59,46 +60,45 @@ public class Game1 : Game
     {
         _input = new InputState();
         inventory = new InventorySystem();
-
+        MyraEnvironment.Game = this;
         base.Initialize();
     }
 
     protected override void LoadContent()
+{
+    font = Content.Load<SpriteFont>("Font");
+    _spriteBatch = new SpriteBatch(GraphicsDevice);
+
+    pixel = new Texture2D(GraphicsDevice, 1, 1);
+    pixel.SetData(new[] { Color.White });
+
+    table = Content.Load<Texture2D>("table");
+    Wall = Content.Load<Texture2D>("WallPaper_0");
+    craftingScene = new CraftingScene();
+    craftingScene.Load(table);
+
+    craftGreyboxSystem = new CraftGreyboxSystem(pixel, font, inventory, Content);
+
+    kepenkTexture = Content.Load<Texture2D>("kepenk");
+    transitionManager = new TransitionManager(pixel, kepenkTexture);
+
+    jungleScene = new JungleScene();
+    jungleScene.Load(Content, GraphicsDevice, inventory);
+
+    shopScene = new ShopScene();
+    shopScene.Load(inventory, () =>
     {
-        font = Content.Load<SpriteFont>("Font");
-        _spriteBatch = new SpriteBatch(GraphicsDevice);
-        table = Content.Load<Texture2D>("table");
-
-        pixel = new Texture2D(GraphicsDevice, 1, 1);
-        pixel.SetData(new[] { Color.White });
-
-        // EKLENDİ: Kepenk PNG'sini yükle ve Geçiş Yöneticisini başlat
-        kepenkTexture = Content.Load<Texture2D>("kepenk");
-        transitionManager = new TransitionManager(pixel, kepenkTexture);
-
-        craftGreyboxSystem = new CraftGreyboxSystem(pixel, font, inventory, Content);
-        MyraEnvironment.Game = this;
-        jungleScene = new JungleScene();
-        jungleScene.Load(Content, GraphicsDevice, inventory);
-        
-        shopScene = new ShopScene();
-        shopScene.Load(inventory, () =>
+        transitionManager.StartTransition(TransitionStyle.Shutter, () =>
         {
-            // DÜZENLEME: Shop'tan Jungle'a geçerken Kepenk (Shutter) kullan
-            transitionManager.StartTransition(TransitionStyle.Shutter, () =>
-            {
-                jungleScene.ResetDay();
-                craftGreyboxSystem.RefreshFromInventory();
-                _gameState = GameState.Jungle;
-            });
+            jungleScene.ResetDay();
+            craftGreyboxSystem.RefreshFromInventory();
+            _gameState = GameState.Jungle;
         });
-        
-        mainMenuScene = new MainMenuScene();
-        mainMenuScene.Load();
-        craftingScene = new CraftingScene();
-        craftingScene.Load(table);
-    }
+    });
 
+    mainMenuScene = new MainMenuScene();
+    mainMenuScene.Load();
+}
     protected override void Update(GameTime gameTime)
     {
         _input.Update(); // update input states

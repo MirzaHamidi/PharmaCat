@@ -15,7 +15,7 @@ namespace PharmaCat.Scripts
 
         private Texture2D texLavender, texBlueLotus, texAntiCurse, texSage;
         private Texture2D texLoveRose, texRedPoppy, texMarigold;
-        private Texture2D texEmptyGlass, texPotion, texMortar, texGrinder, texTrash;
+        private Texture2D texEmptyGlass, texPotion, texMortar1, texMortar, texGrinder, texTrash, texTable, texWall,texLight,texPanjur,texBooktab,texMortarDust,texMortarDust1,texPanjurip;
 
         private MouseState mouse;
         private MouseState oldMouse;
@@ -26,7 +26,8 @@ namespace PharmaCat.Scripts
         private MortarBox mortar;
         private Rectangle waterBox;
         private Rectangle binBox;
-        
+       
+        private Rectangle mortarGrindArea;
         private bool shopOpen;
         private bool recipeBookOpen;
         
@@ -40,16 +41,50 @@ namespace PharmaCat.Scripts
 
         private JarBox draggedJar;
         private bool draggingMortar;
+        private bool draggingGrinder;
+        private Vector2 grinderDragOffset;
+        private bool grinderWasInsideMortar;
+        private Rectangle grinderCurrentRect;
 
         private Random random = new Random();
 
         private float grindProgress;
         private float grindNeeded = 500f;
-
+    
         private bool hasWater;
         private bool hasMixedPotion;
         private Color mixedColor;
         private string craftedPotionName = "";
+        private float mortarScale = 0.3f;
+        private float grinderScale = 0.3f;
+        private Rectangle panjurButton;
+        private int ropeButtonOffsetX = 400;
+        private int ropeButtonOffsetY = 0;
+        private int ropeButtonWidth = 160;
+        private int ropeButtonHeight = 220;
+        private Rectangle panjurRopeButton;
+
+private Vector2 panjurPosition;
+private Vector2 panjurRopePosition;
+
+private bool panjurOpening;
+private bool panjurClosing;
+
+private bool ropeComingDown;
+private bool ropeGoingUp;
+
+private bool panjurButtonVisible = true;
+private bool ropeButtonActive = false;
+private bool ropeVisible = false;
+
+private float panjurSpeed = 120f;
+private float ropeSpeed = 180f;
+
+private float panjurClosedY = 0f;
+private float panjurOpenY = -750f;
+
+private float ropeHiddenY = -300f;
+private float ropeDownY = 0f;
 
         public CraftGreyboxSystem(Texture2D pixel, SpriteFont font, InventorySystem inventory, ContentManager content)
         {
@@ -67,14 +102,64 @@ namespace PharmaCat.Scripts
             
             texEmptyGlass = content.Load<Texture2D>("emptyglass");
             texPotion = content.Load<Texture2D>("potion");
-            
-            texMortar = content.Load<Texture2D>("mortar");
-            texGrinder = content.Load<Texture2D>("grinder");
+            texPanjur = content.Load<Texture2D>("Panjur_5");
+texPanjurip = content.Load<Texture2D>("Panjur_ip_6");
+
+panjurPosition = new Vector2(0, panjurClosedY);
+
+panjurRopePosition = new Vector2(0, ropeHiddenY);
+
+
+panjurButton = new Rectangle(1920 / 2 - 125, 640, 250, 250);
+
+
+panjurRopeButton = new Rectangle(1920 / 2 - 80, 520, 160, 220);
+            texMortar = content.Load<Texture2D>("mortar_0");
+            texMortar1 = content.Load<Texture2D>("mortar_1");
+            texMortarDust = content.Load<Texture2D>("Mortar_Dust_0");
+            texMortarDust1 = content.Load<Texture2D>("Mortar_Dust_1");
+            texGrinder = content.Load<Texture2D>("Mortar_Ball");
             texTrash = content.Load<Texture2D>("trash");
-            
+            texTable = content.Load<Texture2D>("table");
+            texWall = content.Load<Texture2D>("WallPaper_0");
+            texBooktab = content.Load<Texture2D>("Book_Tab");
+            texLight = content.Load<Texture2D>("Light");
             binBox = new Rectangle(1650, 800, 120, 120);
             
-            mortar = new MortarBox(new Rectangle(750, 380, 250, 160));
+            int mortarWidth = (int)(texMortar.Width * mortarScale);
+int mortarHeight = (int)(texMortar.Height * mortarScale);
+
+Rectangle mortarRect = new Rectangle(
+    350,
+    680,
+    mortarWidth,
+    mortarHeight
+);
+
+mortar = new MortarBox(mortarRect);
+
+// Grinder scale
+int grinderWidth = (int)(texGrinder.Width * grinderScale);
+int grinderHeight = (int)(texGrinder.Height * grinderScale);
+
+mortar.Grinder = new Rectangle(
+    mortar.Bounds.Right + 25,
+    mortar.Bounds.Y - 15,
+    grinderWidth,
+    grinderHeight
+);
+
+grinderCurrentRect = mortar.Grinder;
+
+// Gerçek ezme alanı
+mortarGrindArea = new Rectangle(
+    mortar.Bounds.X + (int)(mortar.Bounds.Width * 0.22f),
+    mortar.Bounds.Y + (int)(mortar.Bounds.Height * 0.08f),
+    (int)(mortar.Bounds.Width * 0.56f),
+    (int)(mortar.Bounds.Height * 0.72f)
+);
+
+
             
             waterBox = new Rectangle(1100, 410, 90, 90); 
 
@@ -96,7 +181,7 @@ namespace PharmaCat.Scripts
             mouse = Mouse.GetState();
 
             Point mp = mouse.Position;
-
+            HandlePanjurButton(gameTime, mp);
             // 1. ÖNCELİK: Tarif defteri açıksa
             if (recipeBookOpen)
             {
@@ -135,7 +220,7 @@ namespace PharmaCat.Scripts
             // Eğer menüler kapalıysa oyun mekanikleri çalışır
             HandleJarDrag(mp);
             HandleWater(mp);
-            HandleGrinding(gameTime, mp);
+            HandleGrinderDrag(gameTime, mp);
             HandleMortarDrag(mp);
         }
 
@@ -167,7 +252,15 @@ namespace PharmaCat.Scripts
                 index++;
             }
         }
-        
+        private Rectangle GetPanjurRopeButton()
+{
+    return new Rectangle(
+        (int)panjurRopePosition.X + ropeButtonOffsetX,
+        (int)panjurRopePosition.Y + ropeButtonOffsetY,
+        ropeButtonWidth,
+        ropeButtonHeight
+    );
+}
         private void CreateGlassesFromInventory()
         {
             glasses.Clear();
@@ -177,16 +270,96 @@ namespace PharmaCat.Scripts
                 glasses.Add(new PotionGlassBox(NewGlassPosition(i)));
             }
         }
+private void HandlePanjurButton(GameTime gameTime, Point mp)
+{
+    float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-        private Rectangle NewGlassPosition(int index)
+    // 1) İlk görünmez butona basınca panjur açılmaya başlar
+    if (panjurButtonVisible && LeftPressed() && panjurButton.Contains(mp))
+    {
+        panjurOpening = true;
+        panjurButtonVisible = false;
+    }
+
+    // 2) Panjur yukarı çıkar
+    if (panjurOpening)
+    {
+        panjurPosition.Y -= panjurSpeed * dt;
+
+        if (panjurPosition.Y <= panjurOpenY)
         {
-            // UX DÜZENLEMESİ: Şişeler havanın çok daha altına (Y: 750) ve ortalanarak yerleştirildi
-            // Şişe boyutları PNG için 100x100 olarak güncellendi.
-            int x = 600 + (index % 6) * 160; 
-            int y = 750 + (index / 6) * 160;
+            panjurPosition.Y = panjurOpenY;
+            panjurOpening = false;
 
-            return new Rectangle(x, y, 100, 100);
+            // Panjur tamamen açılınca ip aşağı inmeye başlasın
+            ropeVisible = true;
+            ropeComingDown = true;
+            ropeButtonActive = false;
         }
+    }
+
+    // 3) İp aşağı iner
+    if (ropeComingDown)
+    {
+        panjurRopePosition.Y += ropeSpeed * dt;
+
+        if (panjurRopePosition.Y >= ropeDownY)
+        {
+            panjurRopePosition.Y = ropeDownY;
+            ropeComingDown = false;
+
+            // İp aşağı inince artık tıklanabilir olsun
+            ropeButtonActive = true;
+        }
+    }
+
+    // 4) İpe basınca ip yukarı gider ve panjur kapanır
+    if (ropeButtonActive && LeftPressed() && GetPanjurRopeButton().Contains(mp))
+    {
+        ropeButtonActive = false;
+        ropeGoingUp = true;
+        panjurClosing = true;
+    }
+
+    // 5) İp yukarı çıkar
+    if (ropeGoingUp)
+    {
+        panjurRopePosition.Y -= ropeSpeed * dt;
+
+        if (panjurRopePosition.Y <= ropeHiddenY)
+        {
+            panjurRopePosition.Y = ropeHiddenY;
+            ropeGoingUp = false;
+            ropeVisible = false;
+        }
+    }
+
+    // 6) Panjur aşağı iner
+    if (panjurClosing)
+    {
+        panjurPosition.Y += panjurSpeed * dt;
+
+        if (panjurPosition.Y >= panjurClosedY)
+        {
+            panjurPosition.Y = panjurClosedY;
+            panjurClosing = false;
+
+            // Panjur kapanınca ilk görünmez buton geri gelsin
+            panjurButtonVisible = true;
+        }
+    }
+}        private Rectangle NewGlassPosition(int index)
+{
+    float scale = 0.1f; // 40%
+
+    int width = (int)(texEmptyGlass.Width * scale);
+    int height = (int)(texEmptyGlass.Height * scale);
+
+    int x = 750 + (index % 6) * (width + 20);
+    int y = 750 + (index / 6) * (height + 20);
+
+    return new Rectangle(x, y, width, height);
+}
 
         public void RefreshFromInventory()
         {
@@ -269,33 +442,124 @@ namespace PharmaCat.Scripts
             hasWater = true;
         }
 
-        private void HandleGrinding(GameTime gameTime, Point mp)
+        private void HandleGrinderDrag(GameTime gameTime, Point mp)
+{
+    // Grinder'a tıklayınca tut
+    if (LeftPressed() && grinderCurrentRect.Contains(mp))
+    {
+        draggingGrinder = true;
+
+        grinderDragOffset = new Vector2(
+            mp.X - grinderCurrentRect.X,
+            mp.Y - grinderCurrentRect.Y
+        );
+    }
+
+    // Grinder mouse'u serbestçe takip etsin
+    if (draggingGrinder && mouse.LeftButton == ButtonState.Pressed)
+    {
+        Rectangle desiredRect = new Rectangle(
+            (int)(mp.X - grinderDragOffset.X),
+            (int)(mp.Y - grinderDragOffset.Y),
+            grinderCurrentRect.Width,
+            grinderCurrentRect.Height
+        );
+
+        // Sadece mortar içindeyken sağ-sol duvar collision uygula
+        desiredRect = ApplyMortarSideWallCollision(desiredRect);
+
+        grinderCurrentRect = desiredRect;
+
+        TryGrindWithEnterExit();
+    }
+
+    // Mouse bırakınca olduğu yerde kalsın
+    if (draggingGrinder && LeftReleased())
+    {
+        draggingGrinder = false;
+        grinderWasInsideMortar = false;
+    }
+}
+private Rectangle ApplyMortarSideWallCollision(Rectangle desiredRect)
+{
+    Rectangle outerCollider = mortar.Bounds;
+
+    // Sağ-sol duvar kalınlığı
+    int leftWallThickness = 55;
+    int rightWallThickness = 55;
+
+    // Alt duvar kalınlığı
+    int bottomWallThickness = 35;
+
+    // Grinder mortar sprite alanına girmediyse serbest hareket etsin
+    if (!desiredRect.Intersects(outerCollider))
+        return desiredRect;
+
+    int innerLeft = outerCollider.Left + leftWallThickness;
+    int innerRight = outerCollider.Right - rightWallThickness;
+
+    // Alt duvarın üst sınırı
+    int innerBottom = outerCollider.Bottom - bottomWallThickness;
+
+    int clampedX = (int)MathHelper.Clamp(
+        desiredRect.X,
+        innerLeft,
+        innerRight - desiredRect.Width
+    );
+
+    int clampedY = desiredRect.Y;
+
+    // Sadece aşağı çok inmesini engelle
+    if (desiredRect.Bottom > innerBottom)
+    {
+        clampedY = innerBottom - desiredRect.Height;
+    }
+
+    return new Rectangle(
+        clampedX,
+        clampedY,
+        desiredRect.Width,
+        desiredRect.Height
+    );
+}private void TryGrindWithEnterExit()
+{
+    if (!mortar.HasBottom || !mortar.HasTop || !hasWater)
+        return;
+
+    if (hasMixedPotion)
+        return;
+
+    bool grinderInsideMortar = grinderCurrentRect.Intersects(mortarGrindArea);
+
+    
+    if (grinderInsideMortar && !grinderWasInsideMortar)
+    {
+        float grindAmount = 35f + inventory.MortarLevel * 15f;
+        grindProgress += grindAmount;
+
+        if (grindProgress >= grindNeeded)
         {
-            if (!mortar.HasBottom || !mortar.HasTop || !hasWater)
-                return;
-
-            if (mouse.LeftButton == ButtonState.Pressed && mortar.Grinder.Contains(mp))
-            {
-                float grindSpeed = 70f + inventory.MortarLevel * 35f;
-                grindProgress += grindSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds;
-
-                if (grindProgress >= grindNeeded)
-                {
-                    mixedColor = Mix(mortar.BottomColor, mortar.TopColor);
-                    hasMixedPotion = true;
-
-                    craftedPotionName = GetPotionResult(mortar.BottomHerbName, mortar.TopHerbName);
-
-                    mortar.HasBottom = false;
-                    mortar.HasTop = false;
-                    mortar.BottomHerbName = "";
-                    mortar.TopHerbName = "";
-
-                    grindProgress = 0f;
-                }
-            }
+            FinishGrinding();
         }
+    }
 
+    grinderWasInsideMortar = grinderInsideMortar;
+}
+
+private void FinishGrinding()
+{
+    mixedColor = Mix(mortar.BottomColor, mortar.TopColor);
+    hasMixedPotion = true;
+
+    craftedPotionName = GetPotionResult(mortar.BottomHerbName, mortar.TopHerbName);
+
+    mortar.HasBottom = false;
+    mortar.HasTop = false;
+    mortar.BottomHerbName = "";
+    mortar.TopHerbName = "";
+
+    grindProgress = 0f;
+}
         private void HandleMortarDrag(Point mp)
         {
             if (LeftPressed() && mortar.Bounds.Contains(mp) && hasMixedPotion)
@@ -447,13 +711,33 @@ namespace PharmaCat.Scripts
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            DrawMoney(spriteBatch);
+            spriteBatch.Draw(texWall, Vector2.Zero, Color.White);
+            spriteBatch.Draw(texLight, Vector2.Zero, Color.White);
+            spriteBatch.Draw(texPanjur, panjurPosition, Color.White);
+            spriteBatch.Draw(texPanjurip, panjurRopePosition, Color.White);
+            if (panjurButtonVisible)
+{
+    spriteBatch.Draw(pixel, panjurButton, Color.Red * 0.2f);
+}
+
+if (ropeButtonActive)
+{
+    spriteBatch.Draw(pixel, GetPanjurRopeButton(), Color.Blue * 0.2f);
+}
+            
+            
+            spriteBatch.Draw(texBooktab, Vector2.Zero, Color.White);
+
+            spriteBatch.Draw(texTable, Vector2.Zero, Color.White);
+            
+            DrawMoney(spriteBatch);     
             DrawJars(spriteBatch);
             DrawMortar(spriteBatch);
             DrawWater(spriteBatch);
             DrawGlasses(spriteBatch);
             DrawCraftedPotions(spriteBatch);
             DrawBin(spriteBatch);
+            
             
             // Arayüz Menü Butonları
             DrawBox(spriteBatch, recipeBookButton, Color.DarkSlateGray);
@@ -479,6 +763,7 @@ namespace PharmaCat.Scripts
             {
                 DrawRecipeBook(spriteBatch);
             }
+            
         }
 
         private void DrawRecipeBook(SpriteBatch sb)
@@ -582,7 +867,7 @@ namespace PharmaCat.Scripts
                     r = new Rectangle((int)jar.DragPosition.X, (int)jar.DragPosition.Y, r.Width, r.Height);
                 }
 
-                // Gri kutu çizimi silindi, yerine senin PNG dosyaların eklendi.
+                
                 sb.Draw(GetJarTexture(jar.Name), r, Color.White);
 
                 sb.DrawString(font, jar.Name, new Vector2(r.X, r.Y - 20), Color.White);
@@ -592,21 +877,35 @@ namespace PharmaCat.Scripts
 
         private void DrawMortar(SpriteBatch sb)
         {
-            // Havan çizimi
-            sb.Draw(texMortar, mortar.Bounds, Color.White);
+           
+// Alt mortar layer
+sb.Draw(texMortar, mortar.Bounds, Color.White);
 
-            Rectangle bowl = new Rectangle(mortar.Bounds.X + 37, mortar.Bounds.Y + 10, 176, 120);
 
-            Rectangle top = new Rectangle(bowl.X, bowl.Y, bowl.Width, bowl.Height / 2);
-            Rectangle bottom = new Rectangle(bowl.X, bowl.Y + bowl.Height / 2, bowl.Width, bowl.Height / 2);
+if (mortar.HasBottom)
+{
+    sb.Draw(texMortarDust, mortar.Bounds, mortar.BottomColor);
+}
 
-            if (mortar.HasBottom) sb.Draw(pixel, bottom, mortar.BottomColor * 0.8f);
-            if (mortar.HasTop) sb.Draw(pixel, top, mortar.TopColor * 0.8f);
-            if (hasMixedPotion) sb.Draw(pixel, bowl, mixedColor * 0.8f);
-            if (hasWater) sb.Draw(pixel, bowl, new Color(80, 170, 255, 0.5f));
+if (mortar.HasTop)
+{
+    sb.Draw(texMortarDust1, mortar.Bounds, mortar.TopColor);
+}
 
-            // Öğütme çubuğu
-            sb.Draw(texGrinder, mortar.Grinder, Color.White);
+if (hasMixedPotion)
+{
+    Color potionDustColor = mixedColor * 0.9f;
+
+    sb.Draw(texMortarDust, mortar.Bounds, potionDustColor);
+    sb.Draw(texMortarDust1, mortar.Bounds, potionDustColor);
+}
+
+if (hasWater && !hasMixedPotion)
+{
+    sb.Draw(texMortarDust, mortar.Bounds, new Color(80, 170, 255) * 0.25f);
+    sb.Draw(texMortarDust1, mortar.Bounds, new Color(80, 170, 255) * 0.25f);
+}
+sb.Draw(texGrinder, grinderCurrentRect, Color.White);
 
             sb.DrawString(font, "MORTAR", new Vector2(mortar.Bounds.X, mortar.Bounds.Y - 24), Color.White);
             sb.DrawString(font, "1) Drag herbs  2) Add water  3) Hold pestle  4) Drag mortar to glass", new Vector2(mortar.Bounds.X - 120, mortar.Bounds.Bottom + 8), Color.White);
@@ -621,8 +920,20 @@ namespace PharmaCat.Scripts
             {
                 sb.DrawString(font, craftedPotionName, new Vector2(mortar.Bounds.X, mortar.Bounds.Bottom + 52), Color.Gold);
             }
-        }
+        
+// Üst mortar layer
+bool mortarHasSomething =
+    mortar.HasBottom ||
+    mortar.HasTop ||
+    hasWater ||
+    hasMixedPotion;
 
+float mortar1Alpha = mortarHasSomething ? 0.5f : 1f;
+
+sb.Draw(texMortar1, mortar.Bounds, Color.White * mortar1Alpha);
+// Grinder
+
+        }
         private void DrawWater(SpriteBatch sb)
         {
             DrawBox(sb, waterBox, Color.CornflowerBlue);
@@ -647,7 +958,7 @@ namespace PharmaCat.Scripts
 
                 string text = glass.IsFilled ? glass.PotionName : "Glass";
                 
-                // Şişe yazısını tam ortala
+                
                 Vector2 textSize = font.MeasureString(text);
                 float textCenteredX = glass.Bounds.X + (glass.Bounds.Width / 2f) - (textSize.X / 2f);
                 
@@ -671,7 +982,7 @@ namespace PharmaCat.Scripts
 
         private void DrawBin(SpriteBatch sb)
         {
-            // Çöp kutusu PNG'si çizimi
+            
             sb.Draw(texTrash, binBox, Color.White);
         }
 
