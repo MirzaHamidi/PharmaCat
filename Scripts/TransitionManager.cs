@@ -6,8 +6,8 @@ namespace PharmaCat.Scripts
 {
     public enum TransitionStyle
     {
-        Fade,    // Kararma
-        Shutter  // Kepenk
+        Fade,
+        Shutter
     }
 
     public class TransitionManager

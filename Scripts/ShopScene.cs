@@ -347,16 +347,13 @@ namespace PharmaCat.Scripts
                 return;
             }
 
-            // ==========================================
-            // YENİ İKSİR ETKİLERİ SİSTEMİ BAŞLIYOR
-            // ==========================================
             switch (potionName)
             {
                 case "Sleep Potion":
                     resultLabel.Text = "You used Sleep Potion. The day ends.";
                     RefreshAllUI();
                     goToJungle?.Invoke();
-                    return; // Günü bitirdiği için hemen return atıyoruz
+                    return; 
 
                 case "Persuasion Potion":
                     persuasionActive = true;
@@ -369,17 +366,17 @@ namespace PharmaCat.Scripts
                     break;
 
                 case "Clarity Potion":
-                    inventory.AddMoney(50); // Direkt para ekler
+                    inventory.AddMoney(50); 
                     resultLabel.Text = "Absolute clarity! You suddenly remembered where you hid $50.";
                     break;
 
                 case "Wisdom Potion":
-                    inventory.MortarLevel++; // Havan seviyesi atlatır
+                    inventory.MortarLevel++; 
                     resultLabel.Text = "You feel incredibly wise. Your Mortar Level permanently increased!";
                     break;
 
                 case "Holy Water Potion":
-                    inventory.EmptyBottleCount += 3; // 3 tane boş şişe hediye eder
+                    inventory.EmptyBottleCount += 3; 
                     resultLabel.Text = "Holy light fills the room! You mysteriously found 3 Empty Bottles.";
                     break;
 
@@ -388,7 +385,6 @@ namespace PharmaCat.Scripts
                     break;
 
                 default:
-                    // Eğer henüz bir güç tanımlamadığımız bir iksir kullanılırsa bu yazı çıkar
                     resultLabel.Text = potionName + " used, but it has no shop effect yet.";
                     break;
             }

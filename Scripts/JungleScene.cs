@@ -24,7 +24,6 @@ namespace PharmaCat.Scripts
         private float targetZoom = 1f;
         private bool cameraInitialized = false;
         
-        // DEĞİŞİKLİK: Süre başlangıçta 25 saniye olarak ayarlandı
         private float jungleCounter = 25f; 
         private int herbCount = 0;
 
@@ -292,10 +291,8 @@ namespace PharmaCat.Scripts
 
         public void ResetDay()
         {
-            // DEĞİŞİKLİK: Her yeni güne başlandığında süre 25'e sıfırlanır
             jungleCounter = 25f; 
-            
-            // YENİ EKLENEN KISIM: Her gün başlangıcında (ormana dönüşte) iksir şişeleri 3 olarak sıfırlanır
+ 
             inventory.EmptyBottleCount = 3; 
             
             CraftingRequested = false;

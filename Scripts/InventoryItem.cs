@@ -8,7 +8,6 @@ namespace PharmaCat.Scripts
         public ItemType Type;
         public int Amount;
 
-        // ASSET GELİNCE BURAYA ICON EKLENECEK
         public Texture2D IconTexture;
 
         public InventoryItem(string name, ItemType type, int amount)

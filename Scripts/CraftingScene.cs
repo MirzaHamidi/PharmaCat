@@ -44,7 +44,6 @@ namespace PharmaCat.Scripts
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            // Ahşap masa (tableTexture) çizimi kaldırıldı, artık arkada görünmeyecek.
             craftingDesktop?.Render();
         }
 
