@@ -215,5 +215,3 @@ C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\PharmaCat\PharmaCat\obj\Debug\net9.
 C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\PharmaCat\PharmaCat\obj\Debug\net9.0\PharmaCat.genruntimeconfig.cache
 C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\PharmaCat\PharmaCat\obj\Debug\net9.0\ref\PharmaCat.dll
 C:\Users\hp\Documents\PharmaCat\bin\Debug\net9.0\Content\kepenk.png
-C:\Users\hp\Documents\PharmaCat\bin\Debug\net9.0\Content\emptyglass.png
-C:\Users\hp\Documents\PharmaCat\bin\Debug\net9.0\Content\potion.png
