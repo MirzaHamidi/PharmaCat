@@ -200,6 +200,8 @@ namespace PharmaCat.Scripts
                 glass.PotionName = "";
                 glass.FillColor = Color.Transparent;
 
+                CreateGlassesFromInventory();
+
                 StartResultDialogue("Thank you! This should solve my problem.", true);
             }
             else

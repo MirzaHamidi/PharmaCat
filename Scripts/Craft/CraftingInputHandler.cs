@@ -40,14 +40,113 @@ namespace PharmaCat.Scripts
         }
 
         private void CreateGlassesFromInventory()
-        {
-            glasses.Clear();
+{
+    glasses.Clear();
 
-            for (int i = 0; i < inventory.EmptyBottleCount; i++)
-            {
-                glasses.Add(new PotionGlassBox(NewGlassPosition(i)));
-            }
+    int index = 0;
+
+    foreach (var potion in inventory.CraftedPotions)
+    {
+        if (potion.Value <= 0)
+            continue;
+
+        for (int i = 0; i < potion.Value; i++)
+        {
+            PotionGlassBox glass = new PotionGlassBox(NewGlassPosition(index));
+
+            glass.IsFilled = true;
+            glass.PotionName = potion.Key;
+            glass.FillColor = GetPotionColor(potion.Key);
+
+            glasses.Add(glass);
+            index++;
         }
+    }
+
+    for (int i = 0; i < inventory.EmptyBottleCount; i++)
+    {
+        glasses.Add(new PotionGlassBox(NewGlassPosition(index)));
+        index++;
+    }
+}
+
+private Color GetPotionColor(string potionName)
+{
+    switch (potionName)
+    {
+        case "Sleep Potion":
+            return Mix(GetHerbColor("Lavender"), GetHerbColor("Blue Lotus"));
+
+        case "Love Potion":
+            return Mix(GetHerbColor("Love Rose"), GetHerbColor("Lavender"));
+
+        case "Anti-Curse Potion":
+            return Mix(GetHerbColor("Anti-Curse Clover"), GetHerbColor("Sage"));
+
+        case "Memory Potion":
+            return Mix(GetHerbColor("Sage"), GetHerbColor("Blue Lotus"));
+
+        case "Pain Relief Potion":
+            return Mix(GetHerbColor("Red Poppy"), GetHerbColor("Marigold"));
+
+        case "Persuasion Potion":
+            return Mix(GetHerbColor("Love Rose"), GetHerbColor("Sage"));
+
+        case "Purification Potion":
+            return Mix(GetHerbColor("Lavender"), GetHerbColor("Anti-Curse Clover"));
+
+        case "Relaxation Potion":
+            return Mix(GetHerbColor("Lavender"), GetHerbColor("Sage"));
+
+        case "Soothing Potion":
+            return Mix(GetHerbColor("Lavender"), GetHerbColor("Red Poppy"));
+
+        case "Mystic Romance Potion":
+            return Mix(GetHerbColor("Blue Lotus"), GetHerbColor("Love Rose"));
+
+        case "Holy Water Potion":
+            return Mix(GetHerbColor("Blue Lotus"), GetHerbColor("Anti-Curse Clover"));
+
+        case "Heart Protection Potion":
+            return Mix(GetHerbColor("Love Rose"), GetHerbColor("Anti-Curse Clover"));
+
+        case "Passion Potion":
+            return Mix(GetHerbColor("Love Rose"), GetHerbColor("Red Poppy"));
+
+        case "Vitality Potion":
+            return Mix(GetHerbColor("Anti-Curse Clover"), GetHerbColor("Red Poppy"));
+
+        case "Focus Potion":
+            return Mix(GetHerbColor("Sage"), GetHerbColor("Red Poppy"));
+
+        case "Enlightenment Potion":
+            return Mix(GetHerbColor("Sage"), GetHerbColor("Marigold"));
+
+        case "Calm Potion":
+            return GetHerbColor("Lavender");
+
+        case "Clarity Potion":
+            return GetHerbColor("Blue Lotus");
+
+        case "Charm Potion":
+            return GetHerbColor("Love Rose");
+
+        case "Ward Potion":
+            return GetHerbColor("Anti-Curse Clover");
+
+        case "Wisdom Potion":
+            return GetHerbColor("Sage");
+
+        case "Rage Potion":
+            return GetHerbColor("Red Poppy");
+
+        case "Bright Potion":
+            return GetHerbColor("Marigold");
+
+        default:
+            return Color.Purple;
+    }
+}
 
         private Rectangle NewGlassPosition(int index)
         {
@@ -301,7 +400,7 @@ namespace PharmaCat.Scripts
 
                         if (inventory.EmptyBottleCount > 0)
                         {
-                            inventory.EmptyBottleCount--;
+                        inventory.EmptyBottleCount--;
                         }
 
                         hasMixedPotion = false;
