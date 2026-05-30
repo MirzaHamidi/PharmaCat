@@ -217,6 +217,7 @@ C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\PharmaCat\PharmaCat\obj\Debug\net9.
 C:\Users\hp\Documents\PharmaCat\bin\Debug\net9.0\Content\kepenk.png
 C:\Users\hp\Documents\PharmaCat\bin\Debug\net9.0\Content\emptyglass.png
 C:\Users\hp\Documents\PharmaCat\bin\Debug\net9.0\Content\potion.png
+<<<<<<< HEAD
 C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\bin\Debug\net9.0\Content\agacmap.xnb
 C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\bin\Debug\net9.0\Content\bitkimap.xnb
 C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\bin\Debug\net9.0\Content\cat.xnb
@@ -348,3 +349,5 @@ C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\bin\Debug\net9.0\Content\Mortar_Dus
 C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\bin\Debug\net9.0\Content\Mortar_Dust_1.png
 C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\bin\Debug\net9.0\Content\Panjur_ip_6.xnb
 C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\bin\Debug\net9.0\Content\Panjur_ip_6.png
+=======
+>>>>>>> 653a7747dd16fb013eb8c2b793ae8c0dafb176b0
