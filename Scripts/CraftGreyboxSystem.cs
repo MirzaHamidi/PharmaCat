@@ -69,7 +69,20 @@ namespace PharmaCat.Scripts
         private int ropeButtonWidth = 160;
         private int ropeButtonHeight = 220;
         private Rectangle panjurRopeButton;
+        private Rectangle currentDialogueBubbleRect;
+private Rectangle targetDialogueBubbleRect;
 
+private bool dialogueBubbleInitialized = false;
+
+private string dialogueFullWrappedText = "";
+
+private const int DialogueBubbleMinWidth = 320;
+private const int DialogueBubbleMaxWidth = 760;
+private const int DialogueBubbleMinHeight = 110;
+private const int DialogueBubbleMaxHeight = 300;
+
+private const int DialogueBubblePaddingX = 34;
+private const int DialogueBubblePaddingY = 30;
         private Vector2 panjurPosition;
         private Vector2 panjurRopePosition;
 
@@ -112,6 +125,9 @@ namespace PharmaCat.Scripts
         private float customerLeaveTimer = 0f;
         private float customerXOffset = 0f;
         private Rectangle skipCustomerButton;
+
+        private readonly TypewriterDialogue dialogue = new TypewriterDialogue();
+        private bool introDialogueStarted = false;
 
         public CraftGreyboxSystem(Texture2D pixel, SpriteFont font, InventorySystem inventory, ContentManager content)
         {
@@ -219,6 +235,15 @@ namespace PharmaCat.Scripts
 
             float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
+            dialogue.Update(gameTime);
+
+            if (dialogue.FinishedWaiting)
+            {
+                dialogue.Clear();
+                customerLeaveTimer = 0f;
+                isCustomerLeaving = true;
+            }
+
             if (itemsSlidingOut)
             {
                 slideOffset += 1500f * dt;
@@ -232,10 +257,10 @@ namespace PharmaCat.Scripts
             if (currentCustomer != null && currentEmotion != CustomerEmotion.Silhouette && slideOffset >= 2000f)
             {
                 // DÜZENLEME: Skip Butonu artık kusursuz çalışıyor!
-                if (LeftPressed() && skipCustomerButton.Contains(mp) && !isCustomerLeaving && !isCustomerEntering)
+                if (LeftPressed() && skipCustomerButton.Contains(mp) && !isCustomerLeaving && !isCustomerEntering && !dialogue.IsTyping)
                 {
                     currentEmotion = CustomerEmotion.Angry;
-                    isCustomerLeaving = true;
+                    StartResultDialogue("How rude! I am leaving this cursed shop!", false);
                 }
 
                 if (isCustomerLeaving)
@@ -255,6 +280,8 @@ namespace PharmaCat.Scripts
                             haggleAttempts = 0;
                             isCustomerLeaving = false;
                             isCustomerEntering = true;
+                            introDialogueStarted = false;
+                            dialogue.Clear();
                             
                             customerXOffset = -1500f; 
                             customerLeaveTimer = 0f;
@@ -268,8 +295,14 @@ namespace PharmaCat.Scripts
                     {
                         customerXOffset = 0f;
                         isCustomerEntering = false;
+                        StartIntroDialogue();
                     }
                 }
+            }
+
+            if (!introDialogueStarted && currentCustomer != null && currentEmotion != CustomerEmotion.Silhouette && !isCustomerEntering && !isCustomerLeaving && slideOffset >= 2000f && panjurPosition.Y <= panjurOpenY + 1f)
+            {
+                StartIntroDialogue();
             }
 
             if (recipeBookOpen)
@@ -442,6 +475,8 @@ namespace PharmaCat.Scripts
                     panjurButtonVisible = true;
                     
                     currentCustomer = null;
+                    dialogue.Clear();
+                    introDialogueStarted = false;
                     OnShopFinished?.Invoke();
                 }
             }
@@ -485,6 +520,8 @@ namespace PharmaCat.Scripts
             isCustomerEntering = false;
             customerLeaveTimer = 0f;
             customerXOffset = 0f;
+            introDialogueStarted = false;
+            dialogue.Clear();
         }
 
         private void HandleJarDrag(Point mp)
@@ -744,7 +781,7 @@ namespace PharmaCat.Scripts
         
         private void HandleGlassDrag(Point mp)
         {
-            if (currentCustomer == null || currentEmotion == CustomerEmotion.Silhouette || isCustomerLeaving || isCustomerEntering) 
+            if (currentCustomer == null || currentEmotion == CustomerEmotion.Silhouette || isCustomerLeaving || isCustomerEntering || dialogue.IsTyping) 
             {
                 return;
             }
@@ -796,24 +833,40 @@ namespace PharmaCat.Scripts
 
         public void ResolveSale(PotionGlassBox glass, int price)
         {
-            if (isCustomerLeaving || isCustomerEntering) return;
+            if (isCustomerLeaving || isCustomerEntering || dialogue.IsTyping)
+                return;
 
-            if (price <= currentCustomer.MaxPrice && glass.PotionName == currentCustomer.WantedPotion)
+            if (currentCustomer == null || glass == null || !glass.IsFilled)
+                return;
+
+            bool correctPotion = currentCustomer.AcceptsPotion(glass.PotionName);
+            bool affordable = price <= currentCustomer.MaxPrice;
+
+            if (correctPotion && affordable)
             {
                 currentEmotion = CustomerEmotion.Happy;
                 inventory.AddMoney(price);
+                inventory.RemovePotion(glass.PotionName, 1);
+
+                currentCustomer.MarkPotionBought(glass.PotionName);
                 glass.IsFilled = false;
-                
-                isCustomerLeaving = true; 
+                glass.PotionName = "";
+                glass.FillColor = Color.Transparent;
+
+                StartResultDialogue("Thank you! This should solve my problem.", true);
             }
             else
             {
                 currentEmotion = CustomerEmotion.Angry;
-                haggleAttempts++; 
-                
-                if (haggleAttempts >= 3)
+                haggleAttempts++;
+
+                if (!correctPotion)
                 {
-                    isCustomerLeaving = true; 
+                    StartResultDialogue("Is this a joke? That's not what I need!", false);
+                }
+                else
+                {
+                    StartResultDialogue("This could help, but it is too expensive!", false);
                 }
             }
         }
@@ -1010,16 +1063,7 @@ namespace PharmaCat.Scripts
 
             if (currentCustomer != null)
             {
-                Texture2D cTex = texCustBase[currentCharacter];
-                
-                if (currentEmotion == CustomerEmotion.Happy) 
-                {
-                    cTex = texCustHappy[currentCharacter];
-                }
-                else if (currentEmotion == CustomerEmotion.Angry) 
-                {
-                    cTex = texCustAngry[currentCharacter];
-                }
+                Texture2D cTex = GetCurrentCustomerTexture();
                 
                 float lerpAmount = (panjurPosition.Y - panjurClosedY) / (panjurOpenY - panjurClosedY);
                 lerpAmount = MathHelper.Clamp(lerpAmount, 0f, 1f);
@@ -1036,25 +1080,27 @@ namespace PharmaCat.Scripts
 
                 spriteBatch.Draw(cTex, currentCustRect, cCol);
 
-                if (currentEmotion != CustomerEmotion.Silhouette && lerpAmount > 0.05f)
-                {
-                    // DÜZENLEME: Kullanıcı iksirleri rahat test etsin diye WantedPotion ipucu eklendi!
-                    string text = currentCustomer.CurrentDialogue + $"\n(Needs: {currentCustomer.WantedPotion})";
-                    
-                    if (currentEmotion == CustomerEmotion.Happy) 
-                    {
-                        text = "Thank you! It's perfect.";
-                    }
-                    else if (currentEmotion == CustomerEmotion.Angry) 
-                    {
-                        if (isCustomerLeaving) text = "I've had enough. I'm leaving!";
-                        else if (haggleAttempts == 1) text = "Is this a joke? That's not what I asked for!";
-                        else if (haggleAttempts == 2) text = "Are you trying to scam me? One last chance!";
-                    }
-                    
-                    Color textCol = Color.White * lerpAmount;
-                    spriteBatch.DrawString(font, text, new Vector2(currentCustRect.Right - 50, currentCustRect.Top + 50), textCol);
-                }
+                if (currentEmotion != CustomerEmotion.Silhouette &&
+    lerpAmount > 0.05f &&
+    !string.IsNullOrEmpty(dialogue.VisibleText))
+{
+    Color textCol = Color.White * lerpAmount;
+
+    DrawDialogueBubble(spriteBatch, currentCustRect, textCol);
+
+    float textMaxWidth = targetDialogueBubbleRect.Width - DialogueBubblePaddingX * 2;
+string text = WrapText(dialogue.VisibleText, textMaxWidth);
+
+    spriteBatch.DrawString(
+        font,
+        text,
+        new Vector2(
+            currentDialogueBubbleRect.X + DialogueBubblePaddingX,
+            currentDialogueBubbleRect.Y + DialogueBubblePaddingY
+        ),
+        textCol
+    );
+}
             }
 
             spriteBatch.Draw(texLight, Vector2.Zero, Color.White);
@@ -1088,7 +1134,7 @@ namespace PharmaCat.Scripts
             DrawBox(spriteBatch, shopButton, Color.DarkOliveGreen);
             spriteBatch.DrawString(font, "Open Shop", new Vector2(shopButton.X + 45, shopButton.Y + 15), Color.White);
 
-            if (currentCustomer != null && currentEmotion != CustomerEmotion.Silhouette && slideOffset >= 2000f)
+            if (currentCustomer != null && currentEmotion != CustomerEmotion.Silhouette && slideOffset >= 2000f && !dialogue.IsTyping && !isCustomerLeaving && !isCustomerEntering)
             {
                 DrawBox(spriteBatch, skipCustomerButton, Color.DarkRed);
                 spriteBatch.DrawString(font, "Next Customer", new Vector2(skipCustomerButton.X + 25, skipCustomerButton.Y + 15), Color.White);
@@ -1122,6 +1168,157 @@ namespace PharmaCat.Scripts
             {
                 DrawRecipeBook(spriteBatch);
             }
+        }
+        private void PrepareDialogueBubble(string fullText)
+{
+    dialogueFullWrappedText = WrapText(
+        fullText,
+        DialogueBubbleMaxWidth - DialogueBubblePaddingX * 2
+    );
+
+    Vector2 fullTextSize = font.MeasureString(dialogueFullWrappedText);
+
+    int targetWidth = (int)MathHelper.Clamp(
+        fullTextSize.X + DialogueBubblePaddingX * 2,
+        DialogueBubbleMinWidth,
+        DialogueBubbleMaxWidth
+    );
+
+    int targetHeight = (int)MathHelper.Clamp(
+        fullTextSize.Y + DialogueBubblePaddingY * 2,
+        DialogueBubbleMinHeight,
+        DialogueBubbleMaxHeight
+    );
+
+    targetDialogueBubbleRect = new Rectangle(
+        customerRect.Right - 55,
+        customerRect.Top + 35,
+        targetWidth,
+        targetHeight
+    );
+
+    currentDialogueBubbleRect = new Rectangle(
+        targetDialogueBubbleRect.X,
+        targetDialogueBubbleRect.Y,
+        DialogueBubbleMinWidth,
+        DialogueBubbleMinHeight
+    );
+
+    dialogueBubbleInitialized = true;
+}
+        private void StartIntroDialogue()
+{
+    if (currentCustomer == null || introDialogueStarted)
+        return;
+
+    introDialogueStarted = true;
+
+    string text =
+        currentCustomer.CurrentDialogue +
+        "\nSolutions: " +
+        currentCustomer.GetAcceptablePotionText();
+
+    PrepareDialogueBubble(text);
+
+    dialogue.Start(text, DialogueMood.Intro, false);
+}
+
+        private void StartResultDialogue(string text, bool happyResult)
+{
+    PrepareDialogueBubble(text);
+
+    DialogueMood mood = happyResult ? DialogueMood.HappyResult : DialogueMood.AngryResult;
+
+    dialogue.Start(text, mood, true);
+}
+
+        private Texture2D GetCurrentCustomerTexture()
+        {
+            if (string.IsNullOrEmpty(currentCharacter))
+                return texCustBase["a"];
+
+            if (dialogue.IsTyping)
+            {
+                if (dialogue.Mood == DialogueMood.Intro || dialogue.Mood == DialogueMood.HappyResult)
+                    return dialogue.FaceToggle ? texCustHappy[currentCharacter] : texCustBase[currentCharacter];
+
+                if (dialogue.Mood == DialogueMood.AngryResult)
+                    return dialogue.FaceToggle ? texCustAngry[currentCharacter] : texCustBase[currentCharacter];
+            }
+
+            if (currentEmotion == CustomerEmotion.Happy)
+                return texCustHappy[currentCharacter];
+
+            if (currentEmotion == CustomerEmotion.Angry)
+                return texCustAngry[currentCharacter];
+
+            return texCustBase[currentCharacter];
+        }
+
+        private void DrawDialogueBubble(SpriteBatch sb, Rectangle currentCustRect, Color color)
+{
+    if (!dialogueBubbleInitialized)
+        return;
+
+    targetDialogueBubbleRect.X = currentCustRect.Right - 55;
+    targetDialogueBubbleRect.Y = currentCustRect.Top + 35;
+
+    currentDialogueBubbleRect = LerpRectangle(
+        currentDialogueBubbleRect,
+        targetDialogueBubbleRect,
+        0.22f
+    );
+
+    sb.Draw(pixel, currentDialogueBubbleRect, Color.Black * 0.72f);
+
+    sb.Draw(pixel, new Rectangle(currentDialogueBubbleRect.X, currentDialogueBubbleRect.Y, currentDialogueBubbleRect.Width, 3), color);
+    sb.Draw(pixel, new Rectangle(currentDialogueBubbleRect.X, currentDialogueBubbleRect.Bottom - 3, currentDialogueBubbleRect.Width, 3), color);
+    sb.Draw(pixel, new Rectangle(currentDialogueBubbleRect.X, currentDialogueBubbleRect.Y, 3, currentDialogueBubbleRect.Height), color);
+    sb.Draw(pixel, new Rectangle(currentDialogueBubbleRect.Right - 3, currentDialogueBubbleRect.Y, 3, currentDialogueBubbleRect.Height), color);
+}
+
+        private Rectangle LerpRectangle(Rectangle from, Rectangle to, float amount)
+        {
+        return new Rectangle(
+        (int)MathHelper.Lerp(from.X, to.X, amount),
+        (int)MathHelper.Lerp(from.Y, to.Y, amount),
+        (int)MathHelper.Lerp(from.Width, to.Width, amount),
+        (int)MathHelper.Lerp(from.Height, to.Height, amount)
+        );
+        }
+
+        private string WrapText(string text, float maxLineWidth)
+        {
+            if (string.IsNullOrEmpty(text))
+                return "";
+
+            string[] rawLines = text.Split('\n');
+            string result = "";
+
+            foreach (string rawLine in rawLines)
+            {
+                string[] words = rawLine.Split(' ');
+                string line = "";
+
+                foreach (string word in words)
+                {
+                    string testLine = string.IsNullOrEmpty(line) ? word : line + " " + word;
+
+                    if (font.MeasureString(testLine).X > maxLineWidth)
+                    {
+                        result += line + "\n";
+                        line = word;
+                    }
+                    else
+                    {
+                        line = testLine;
+                    }
+                }
+
+                result += line + "\n";
+            }
+
+            return result.TrimEnd();
         }
 
         private void DrawRecipeBook(SpriteBatch sb)

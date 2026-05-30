@@ -1,7 +1,8 @@
 using System;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Graphics;
 using Myra.Graphics2D.UI;
-
 namespace PharmaCat.Scripts
 {
     internal class ShopScene
@@ -34,12 +35,48 @@ namespace PharmaCat.Scripts
 
         private bool persuasionActive;
 
-        public void Load(InventorySystem inventory, Action goToJungle)
+        private ContentManager content;
+        private Viewport viewport;
+        private GraphicsDevice graphicsDevice;
+
+        private Texture2D pixel;
+        private SpriteFont newRockerFont;
+
+        private ShopDialogueActor dialogueActor;
+
+        private Texture2D customerNormal;
+        private Texture2D customerHappy;
+        private Texture2D customerAngry;
+
+        private Random random = new Random();
+
+        private bool waitingForCustomerToLeave;
+
+        public void Load(InventorySystem inventory,Action goToJungle,ContentManager content,Viewport viewport,GraphicsDevice graphicsDevice)
         {
+            this.content = content;
+            this.viewport = viewport;
             this.inventory = inventory;
             this.goToJungle = goToJungle;
-
+            this.graphicsDevice = graphicsDevice;
             currentCustomer = new Customers();
+            LoadRandomCustomerTextures();
+
+            pixel = new Texture2D(graphicsDevice, 1, 1);
+            pixel.SetData(new[] { Color.White });
+
+            newRockerFont = content.Load<SpriteFont>("newRocker");
+            Console.WriteLine("New Rocker font loaded!");
+            dialogueActor = new ShopDialogueActor(
+            customerNormal,
+            customerHappy,
+            customerAngry,
+            pixel,
+            newRockerFont,
+            viewport
+            );
+
+            dialogueActor.StartIntro(currentCustomer.CurrentDialogue);
 
             var panel = new Panel();
 
@@ -61,7 +98,7 @@ namespace PharmaCat.Scripts
 
             customerDialogueLabel = new Label
             {
-                Text = currentCustomer.CurrentDialogue,
+                Text = "",
                 Left = 610, 
                 Top = 150,
                 Width = 700,
@@ -79,11 +116,12 @@ namespace PharmaCat.Scripts
 
             serveButton = new TextButton
             {
-                Text = "Serve Customer",
-                Left = 850, 
-                Top = 400,
-                Width = 220,
-                Height = 55
+            Text = "Serve Customer",
+            Left = 850,
+            Top = 400,
+            Width = 220,
+            Height = 55,
+            Visible = false
             };
 
             sellPotionBox = new ComboBox
@@ -172,19 +210,16 @@ namespace PharmaCat.Scripts
 
             nextCustomerButton.Click += (s, a) =>
             {
-                currentCustomer = new Customers();
-                persuasionActive = false;
+            dialogueActor.ForceLeave();
+            waitingForCustomerToLeave = true;
 
-                customerDialogueLabel.Text = currentCustomer.CurrentDialogue;
-                resultLabel.Text = "";
+            serveButton.Visible = false;
+            sellPotionBox.Visible = false;
+            priceBox.Visible = false;
+            sellButton.Visible = false;
+            nextCustomerButton.Visible = false;
 
-                priceBox.Text = "10";
-                sellPotionBox.Visible = false;
-                priceBox.Visible = false;
-                sellButton.Visible = false;
-                nextCustomerButton.Visible = false;
-
-                RefreshAllUI();
+            resultLabel.Text = "";
             };
 
             returnToJungleButton.Click += (s, a) =>
@@ -210,7 +245,26 @@ namespace PharmaCat.Scripts
 
             RefreshAllUI();
         }
+        private void LoadRandomCustomerTextures()
+        {
+        string[] customerNames =
+        {
+        "a",
+        "b",
+        "c",
+        "d",
+        "e",
+        "f",
+        "g",
+        "h"
+        };
 
+        string selected = customerNames[random.Next(customerNames.Length)];
+
+        customerNormal = content.Load<Texture2D>(selected);
+        customerHappy = content.Load<Texture2D>(selected + "_happy");
+        customerAngry = content.Load<Texture2D>(selected + "_angry");
+        }
         private void CreateUsePotionPanel()
         {
             usePotionPanel = new Panel
@@ -269,67 +323,73 @@ namespace PharmaCat.Scripts
         }
 
         private void SellSelectedPotion()
+{
+    if (sellPotionBox.SelectedItem == null)
+    {
+        dialogueActor.StartResult("Choose a potion first.");
+        return;
+    }
+
+    string potionName = ExtractPotionName(sellPotionBox.SelectedItem.Text);
+
+    if (!int.TryParse(priceBox.Text, out int price))
+    {
+        dialogueActor.StartResult("Price must be a number.");
+        return;
+    }
+
+    if (!inventory.CraftedPotions.ContainsKey(potionName) || inventory.CraftedPotions[potionName] <= 0)
+    {
+        dialogueActor.StartResult("You don't have this potion.");
+        RefreshAllUI();
+        return;
+    }
+
+    bool correctPotion = currentCustomer.AcceptsPotion(potionName);
+
+    if (correctPotion)
+    {
+        inventory.RemovePotion(potionName, 1);
+        inventory.AddMoney(price);
+
+        dialogueActor.StartResult("Correct potion sold. You earned $" + price + ".");
+    }
+    else if (persuasionActive)
+    {
+        int maxPersuasionPrice = currentCustomer.MaxPrice + 25;
+
+        if (price <= maxPersuasionPrice)
         {
-            if (sellPotionBox.SelectedItem == null)
-            {
-                resultLabel.Text = "Choose a potion first.";
-                return;
-            }
+            inventory.RemovePotion(potionName, 1);
+            inventory.AddMoney(price);
 
-            string potionName = ExtractPotionName(sellPotionBox.SelectedItem.Text);
-
-            if (!int.TryParse(priceBox.Text, out int price))
-            {
-                resultLabel.Text = "Price must be a number.";
-                return;
-            }
-
-            if (!inventory.CraftedPotions.ContainsKey(potionName) || inventory.CraftedPotions[potionName] <= 0)
-            {
-                resultLabel.Text = "You don't have this potion.";
-                RefreshAllUI();
-                return;
-            }
-
-            bool correctPotion = potionName == currentCustomer.WantedPotion;
-
-            if (correctPotion)
-            {
-                inventory.RemovePotion(potionName, 1);
-                inventory.AddMoney(price);
-
-                resultLabel.Text = "Correct potion sold. You earned $" + price + ".";
-            }
-            else if (persuasionActive)
-            {
-                int maxPersuasionPrice = currentCustomer.MaxPrice + 25;
-
-                if (price <= maxPersuasionPrice)
-                {
-                    inventory.RemovePotion(potionName, 1);
-                    inventory.AddMoney(price);
-
-                    resultLabel.Text = "Wrong potion sold with persuasion. You earned $" + price + ".";
-                    persuasionActive = false;
-                }
-                else
-                {
-                    resultLabel.Text = "Too expensive. Even persuasion could not save this scam.";
-                    persuasionActive = false;
-                }
-            }
-            else
-            {
-                resultLabel.Text = "Wrong potion. Customer refused it.";
-            }
-
-            nextCustomerButton.Visible = true;
-            RefreshAllUI();
-
-            if (!HasAnyPotion())
-                goToJungle?.Invoke();
+            dialogueActor.StartResult("Wrong potion sold with persuasion. You earned $" + price + ".");
+            persuasionActive = false;
         }
+        else
+        {
+            dialogueActor.StartResult("Too expensive. Even persuasion could not save this scam.");
+            persuasionActive = false;
+        }
+    }
+    else
+    {
+        dialogueActor.StartResult("Wrong potion. Customer refused it.");
+    }
 
+    resultLabel.Text = "";
+
+    serveButton.Visible = false;
+    sellPotionBox.Visible = false;
+    priceBox.Visible = false;
+    sellButton.Visible = false;
+    nextCustomerButton.Visible = true;
+
+    RefreshAllUI();
+
+    if (!HasAnyPotion())
+        goToJungle?.Invoke();
+}
         private void UseSelectedPotion()
         {
             if (usePotionBox.SelectedItem == null)
@@ -479,12 +539,58 @@ namespace PharmaCat.Scripts
         }
 
         public void Update(GameTime gameTime)
-        {
-        }
+{
+    dialogueActor?.Update(gameTime);
 
-        public void Draw()
+    if (dialogueActor != null && dialogueActor.IntroFinished && !waitingForCustomerToLeave)
+    {
+        serveButton.Visible = true;
+    }
+
+    if (waitingForCustomerToLeave && dialogueActor != null && dialogueActor.IsGone)
+    {
+        CreateNextCustomer();
+    }
+}
+        private void CreateNextCustomer()
         {
-            shopDesktop?.Render();
+        currentCustomer = new Customers();
+        persuasionActive = false;
+        waitingForCustomerToLeave = false;
+
+        LoadRandomCustomerTextures();
+
+        dialogueActor = new ShopDialogueActor(
+        customerNormal,
+        customerHappy,
+        customerAngry,
+        pixel,
+        newRockerFont,
+        viewport
+        );
+
+        dialogueActor.StartIntro(currentCustomer.CurrentDialogue);
+
+        customerDialogueLabel.Text = "";
+        resultLabel.Text = "";
+
+        priceBox.Text = "10";
+
+        serveButton.Visible = false;
+        sellPotionBox.Visible = false;
+        priceBox.Visible = false;
+        sellButton.Visible = false;
+        nextCustomerButton.Visible = false;
+
+        RefreshAllUI();
+        }
+            public void Draw(SpriteBatch spriteBatch)
+        {
+        spriteBatch.Begin();
+        dialogueActor?.Draw(spriteBatch);
+        spriteBatch.End();
+
+        shopDesktop?.Render();
         }
     }
 }

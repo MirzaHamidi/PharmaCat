@@ -39,6 +39,7 @@
     <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/Content/table.png</File>
     <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/Content/treeset.png</File>
     <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/Content/WallPaper_0.png</File>
+    <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/Content/newRocker.spritefont</File>
   </SourceFiles>
   <DestFiles>
     <File>mapjungle.png</File>
@@ -66,6 +67,7 @@
     <File xsi:nil="true" />
     <File xsi:nil="true" />
     <File>Light.png</File>
+    <File xsi:nil="true" />
     <File xsi:nil="true" />
     <File xsi:nil="true" />
     <File xsi:nil="true" />

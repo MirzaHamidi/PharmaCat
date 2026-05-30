@@ -368,6 +368,8 @@
 /processorParam:TextureFormat=Color
 /build:Mortar_Dust_1.png
 
+
+
 #begin Panjur_5.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -428,3 +430,9 @@
 /processorParam:TextureFormat=Color
 /build:WallPaper_0.png
 
+#begin newRocker.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:newRocker.spritefont

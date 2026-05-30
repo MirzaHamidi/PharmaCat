@@ -17,12 +17,10 @@ public class Game1 : Game
     {
         MainMenu,
         Jungle,
-        Shop,
         Crafting,
         Paused,
         GameOver
     }
-    private ShopScene shopScene;
     private MainMenuScene mainMenuScene;
     private JungleScene jungleScene;
     private CraftingScene craftingScene;
@@ -65,7 +63,7 @@ public class Game1 : Game
 
     protected override void LoadContent()
     {
-        font = Content.Load<SpriteFont>("Font");
+        font = Content.Load<SpriteFont>("newRocker");
         _spriteBatch = new SpriteBatch(GraphicsDevice);
 
         pixel = new Texture2D(GraphicsDevice, 1, 1);
@@ -73,7 +71,8 @@ public class Game1 : Game
 
         table = Content.Load<Texture2D>("table");
         Wall = Content.Load<Texture2D>("WallPaper_0");
-        
+        mainMenuScene = new MainMenuScene();
+        mainMenuScene.Load();
         craftingScene = new CraftingScene();
         craftingScene.Load(); 
 
@@ -84,20 +83,6 @@ public class Game1 : Game
 
         jungleScene = new JungleScene();
         jungleScene.Load(Content, GraphicsDevice, inventory);
-
-        shopScene = new ShopScene();
-        shopScene.Load(inventory, () =>
-        {
-            transitionManager.StartTransition(TransitionStyle.Shutter, () =>
-            {
-                jungleScene.ResetDay();
-                craftGreyboxSystem.RefreshFromInventory();
-                _gameState = GameState.Jungle;
-            });
-        });
-
-        mainMenuScene = new MainMenuScene();
-        mainMenuScene.Load();
 
         // --- KÖPRÜLER BURADA KURULUYOR ---
         
@@ -166,9 +151,6 @@ public class Game1 : Game
                 }
                 break;
 
-            case GameState.Shop:
-                shopScene.Update(gameTime);
-                break;
 
             case GameState.Crafting:
                 craftingScene.Update(gameTime);
@@ -187,22 +169,13 @@ public class Game1 : Game
         {
             case GameState.MainMenu:
                 GraphicsDevice.Clear(Color.CornflowerBlue);
-                _spriteBatch.Begin();
                 mainMenuScene.Draw();
-                _spriteBatch.End();
                 break;
 
             case GameState.Jungle:
                 GraphicsDevice.Clear(Color.ForestGreen);
                 jungleScene.DrawWorld(_spriteBatch, GraphicsDevice.Viewport);
                 jungleScene.DrawUi(_spriteBatch, font);
-                break;
-
-            case GameState.Shop:
-                GraphicsDevice.Clear(Color.Black);
-                _spriteBatch.Begin();
-                shopScene.Draw();
-                _spriteBatch.End();
                 break;
 
             case GameState.Crafting:
