@@ -10,6 +10,7 @@
     <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/Content/b_happy.png</File>
     <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/Content/b.png</File>
     <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/Content/bitkimap.png</File>
+    <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/Content/Blocker_4.png</File>
     <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/Content/Book_tab.png</File>
     <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/Content/c_angry.png</File>
     <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/Content/c_happy.png</File>
@@ -19,6 +20,8 @@
     <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/Content/d_angry.png</File>
     <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/Content/d_happy.png</File>
     <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/Content/d.png</File>
+    <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/Content/Dust_bottle.png</File>
+    <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/Content/Dust.png</File>
     <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/Content/e_angry.png</File>
     <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/Content/e_happy.png</File>
     <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/Content/e.png</File>
@@ -29,6 +32,7 @@
     <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/Content/h_angry.png</File>
     <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/Content/h_happy.png</File>
     <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/Content/h.png</File>
+    <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/Content/Jar_prop.png</File>
     <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/Content/Light_3_char_u╠êstu╠êne.png</File>
     <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/Content/Mortar_0.png</File>
     <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/Content/Mortar_1.png</File>
@@ -38,6 +42,7 @@
     <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/Content/newRocker.spritefont</File>
     <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/Content/Panjur_5.png</File>
     <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/Content/Panjur_ip_6.png</File>
+    <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/Content/Pen_prop.png</File>
     <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/Content/table.png</File>
     <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/Content/treeset.png</File>
     <File>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/Content/WallPaper_0.png</File>
@@ -68,7 +73,12 @@
     <File xsi:nil="true" />
     <File xsi:nil="true" />
     <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
     <File>Light.png</File>
+    <File xsi:nil="true" />
     <File xsi:nil="true" />
     <File xsi:nil="true" />
     <File xsi:nil="true" />

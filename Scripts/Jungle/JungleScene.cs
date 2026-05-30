@@ -24,7 +24,7 @@ namespace PharmaCat.Scripts
         private float targetZoom = 1f;
         private bool cameraInitialized = false;
         
-        private float jungleCounter = 5f; 
+        private float jungleCounter = 25f; 
         private int herbCount = 0;
 
         private TiledIsoEntity pendingCollectionBush = null;

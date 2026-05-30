@@ -343,7 +343,6 @@ C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\bin\Debug\net9.0\Content\f.png
 C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\bin\Debug\net9.0\Content\f_angry.png
 C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\bin\Debug\net9.0\Content\f_happy.png
 C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\bin\Debug\net9.0\Content\g.png
-C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\bin\Debug\net9.0\Content\glass.png
 C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\bin\Debug\net9.0\Content\grinder.png
 C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\bin\Debug\net9.0\Content\g_angry.png
 C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\bin\Debug\net9.0\Content\g_happy.png
@@ -452,3 +451,14 @@ C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\obj\Debug\net9.0\PharmaCat.genrunti
 C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\obj\Debug\net9.0\ref\PharmaCat.dll
 C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\bin\Debug\net9.0\Content\Codex_open.xnb
 C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\bin\Debug\net9.0\Content\Codex_open.png
+C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\bin\Debug\net9.0\Content\Blocker_4.xnb
+C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\bin\Debug\net9.0\Content\Dust.xnb
+C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\bin\Debug\net9.0\Content\Dust_bottle.xnb
+C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\bin\Debug\net9.0\Content\Jar_prop.xnb
+C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\bin\Debug\net9.0\Content\Pen_prop.xnb
+C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\bin\Debug\net9.0\Content\Blocker_4.png
+C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\bin\Debug\net9.0\Content\Dust.png
+C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\bin\Debug\net9.0\Content\Dust_bottle.png
+C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\bin\Debug\net9.0\Content\Jar_prop.png
+C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\bin\Debug\net9.0\Content\Pen_prop.png
+C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\bin\Debug\net9.0\Content\emptyglass1.png

@@ -16,7 +16,7 @@ namespace PharmaCat.Scripts
 
         private Texture2D texLavender, texBlueLotus, texAntiCurse, texSage;
         private Texture2D texLoveRose, texRedPoppy, texMarigold;
-        private Texture2D texEmptyGlass, texPotion, texMortar1, texMortar, texGrinder, texTrash, texTable, texWall, texLight, texPanjur, texBooktab, texCodex ,texMortarDust, texMortarDust1, texPanjurip;
+        private Texture2D texEmptyGlass,texPen, texPotion, texMortar1, texMortar, texGrinder, texTrash, texTable, texWall, texLight, texPanjur, texBooktab, texCodex ,texMortarDust, texMortarDust1, texPanjurip;
 
         private Dictionary<string, Texture2D> texCustBase = new Dictionary<string, Texture2D>();
         private Dictionary<string, Texture2D> texCustHappy = new Dictionary<string, Texture2D>();
@@ -108,8 +108,8 @@ namespace PharmaCat.Scripts
         private bool ropeButtonActive = false;
         private bool ropeVisible = false;
 
-        private float panjurSpeed = 120f;
-        private float ropeSpeed = 180f;
+        private float panjurSpeed = 250f;
+        private float ropeSpeed = 195f;
 
         private float panjurClosedY = 0f;
         private float panjurOpenY = -750f;
@@ -182,6 +182,7 @@ namespace PharmaCat.Scripts
             texTable = content.Load<Texture2D>("table");
             texWall = content.Load<Texture2D>("WallPaper_0");
             texBooktab = content.Load<Texture2D>("Book_Tab");
+            texPen = content.Load<Texture2D>("Pen_prop");
             
 
             bookTabPosition = bookTabClosedPosition;
@@ -521,7 +522,7 @@ namespace PharmaCat.Scripts
                 spriteBatch.Draw(texEmptyGlass, r, Color.White);
                 spriteBatch.Draw(texPotion, r, draggedGlass.FillColor);
             }
-
+            spriteBatch.Draw(texPen, Vector2.Zero, Color.White);
             if (shopOpen)
             {
                 DrawShop(spriteBatch);

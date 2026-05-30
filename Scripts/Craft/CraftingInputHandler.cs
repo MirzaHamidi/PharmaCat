@@ -150,7 +150,7 @@ private Color GetPotionColor(string potionName)
 
         private Rectangle NewGlassPosition(int index)
         {
-            float scale = 0.1f; 
+            float scale = 0.15f; 
 
             int width = (int)(texEmptyGlass.Width * scale);
             int height = (int)(texEmptyGlass.Height * scale);
