@@ -450,3 +450,5 @@ C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\obj\Debug\net9.0\refint\PharmaCat.d
 C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\obj\Debug\net9.0\PharmaCat.pdb
 C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\obj\Debug\net9.0\PharmaCat.genruntimeconfig.cache
 C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\obj\Debug\net9.0\ref\PharmaCat.dll
+C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\bin\Debug\net9.0\Content\Codex_open.xnb
+C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\bin\Debug\net9.0\Content\Codex_open.png

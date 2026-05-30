@@ -145,6 +145,18 @@
 /processorParam:TextureFormat=Color
 /build:cat.png
 
+#begin Codex_open.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Codex_open.png
+
 #begin d_angry.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -368,7 +380,12 @@
 /processorParam:TextureFormat=Color
 /build:Mortar_Dust_1.png
 
-
+#begin newRocker.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:newRocker.spritefont
 
 #begin Panjur_5.png
 /importer:TextureImporter
@@ -430,9 +447,3 @@
 /processorParam:TextureFormat=Color
 /build:WallPaper_0.png
 
-#begin newRocker.spritefont
-/importer:FontDescriptionImporter
-/processor:FontDescriptionProcessor
-/processorParam:PremultiplyAlpha=True
-/processorParam:TextureFormat=Compressed
-/build:newRocker.spritefont

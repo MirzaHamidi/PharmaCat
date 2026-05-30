@@ -2,36 +2,110 @@ using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace PharmaCat.Scripts
-{
+namespace PharmaCat.Scripts;
     public partial class CraftGreyboxSystem
     {
-        private void DrawRecipeBook(SpriteBatch sb)
-        {
-            DrawBox(sb, recipeBookPanel, new Color(35, 25, 15, 252));
-            sb.DrawString(font, "RECIPE BOOK", new Vector2(recipeBookPanel.X + 50, recipeBookPanel.Y + 35), Color.Gold);
+        private void DrawRecipeBookContent(SpriteBatch sb)
+{
+    
+    float baseX = codexPosition.X;
+    float baseY = codexPosition.Y;
 
-            DrawBox(sb, closeRecipeBookButton, Color.DarkRed);
-            sb.DrawString(font, "X", new Vector2(closeRecipeBookButton.X + 16, closeRecipeBookButton.Y + 10), Color.White);
+ 
+    sb.DrawString(
+        font,
+        "RECIPE BOOK",
+        new Vector2(baseX + 650, baseY + 135),
+        Color.Gold
+    );
 
-            int yStart = recipeBookPanel.Y + 110;
-            int col1X = recipeBookPanel.X + 60;
-            int col2X = recipeBookPanel.X + 720;
+    int yStart = (int)(baseY + 205);
 
-            string[] col1Recipes = PotionRecipeDatabase.StandardRecipes;
-            string[] col2Recipes = PotionRecipeDatabase.ConcentratedRecipes;
+    int leftColX = (int)(baseX + 470);
+    int rightColX = (int)(baseX + 1020);
 
-            for (int i = 0; i < col1Recipes.Length; i++)
-            {
-                sb.DrawString(font, col1Recipes[i], new Vector2(col1X, yStart + i * 45), Color.White);
-            }
+    int lineGap = 34;
 
-            for (int i = 0; i < col2Recipes.Length; i++)
-            {
-                Color textColor = col2Recipes[i].StartsWith("---") ? Color.Gold : Color.White;
-                sb.DrawString(font, col2Recipes[i], new Vector2(col2X, yStart + i * 45), textColor);
-            }
-        }
+    string[] leftRecipes =
+    {
+        "Lavender + Blue Lotus = Sleep Potion",
+        "                                   ",
+        
+        "Love Rose + Lavender = Love Potion",
+        "                                   ",
+        
+        "Anti-Curse Clover + Sage = Anti-Curse Potion",
+        "                                   ",
+        
+        "Sage + Blue Lotus = Memory Potion",
+        "                                   ",
+        
+        "Red Poppy + Marigold = Pain Relief Potion",
+        "                                   ",
+        
+        "Love Rose + Sage = Persuasion Potion",
+        "                                   ",
+        
+        "Lavender + Anti-Curse Clover = Purification Potion",
+        "                                   ",
+        
+        "Lavender + Sage = Relaxation Potion",
+        "                                   ",
+    
+        "Lavender + Red Poppy = Soothing Potion",
+        "                                   "
+        
+    };
 
+    string[] rightRecipes =
+    {
+
+        "Blue Lotus + Love Rose = Mystic Romance Potion",
+        "                                   ",
+        "Blue Lotus + Anti-Curse Clover = Holy Water Potion",
+        "                                   ",
+        "Love Rose + Anti-Curse Clover = Heart Protection Potion",
+        "                                   ",
+        "Love Rose + Red Poppy = Passion Potion",
+        "                                   ",
+        "Anti-Curse Clover + Red Poppy = Vitality Potion",
+        "                                   ",
+        "Sage + Red Poppy = Focus Potion",
+        "                                   ",
+        "Sage + Marigold = Enlightenment Potion",
+        "",
+        "-- Concentrated Potions --",
+        "Lavender + Lavender = Calm Potion",
+        "Blue Lotus + Blue Lotus = Clarity Potion",
+        "Love Rose + Love Rose = Charm Potion",
+        "Anti-Curse Clover + Anti-Curse Clover = Ward Potion",
+        "Sage + Sage = Wisdom Potion",
+        "Red Poppy + Red Poppy = Rage Potion",
+        "Marigold + Marigold = Bright Potion"
+    };
+
+    for (int i = 0; i < leftRecipes.Length; i++)
+    {
+        sb.DrawString(
+            font,
+            leftRecipes[i],
+            new Vector2(leftColX, yStart + i * lineGap),
+            Color.DarkCyan
+        );
+    }
+
+    for (int i = 0; i < rightRecipes.Length; i++)
+    {
+        Color textColor = rightRecipes[i].StartsWith("--")
+            ? Color.Gold
+            : Color.DarkCyan;
+
+        sb.DrawString(
+            font,
+            rightRecipes[i],
+            new Vector2(rightColX, yStart + i * lineGap),
+            textColor
+        );
     }
 }
+    }

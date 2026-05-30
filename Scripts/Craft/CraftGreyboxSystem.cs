@@ -16,7 +16,7 @@ namespace PharmaCat.Scripts
 
         private Texture2D texLavender, texBlueLotus, texAntiCurse, texSage;
         private Texture2D texLoveRose, texRedPoppy, texMarigold;
-        private Texture2D texEmptyGlass, texPotion, texMortar1, texMortar, texGrinder, texTrash, texTable, texWall, texLight, texPanjur, texBooktab, texMortarDust, texMortarDust1, texPanjurip;
+        private Texture2D texEmptyGlass, texPotion, texMortar1, texMortar, texGrinder, texTrash, texTable, texWall, texLight, texPanjur, texBooktab, texCodex ,texMortarDust, texMortarDust1, texPanjurip;
 
         private Dictionary<string, Texture2D> texCustBase = new Dictionary<string, Texture2D>();
         private Dictionary<string, Texture2D> texCustHappy = new Dictionary<string, Texture2D>();
@@ -73,15 +73,30 @@ namespace PharmaCat.Scripts
         private Rectangle targetDialogueBubbleRect;
 
         private bool dialogueBubbleInitialized = false;
-private const int DialogueBubbleMinWidth = 320;
-private const int DialogueBubbleMaxWidth = 760;
-private const int DialogueBubbleMinHeight = 110;
-private const int DialogueBubbleMaxHeight = 300;
+        private const int DialogueBubbleMinWidth = 320;
+        private const int DialogueBubbleMaxWidth = 760;
+        private const int DialogueBubbleMinHeight = 110;
+        private const int DialogueBubbleMaxHeight = 300;
 
-private const int DialogueBubblePaddingX = 34;
-private const int DialogueBubblePaddingY = 30;
+        private const int DialogueBubblePaddingX = 34;
+        private const int DialogueBubblePaddingY = 30;
         private Vector2 panjurPosition;
         private Vector2 panjurRopePosition;
+
+
+        private bool recipeBookAnimatingOpen;
+        private bool recipeBookAnimatingClose;
+
+        private Vector2 bookTabPosition;
+        private Vector2 codexPosition;
+
+        private Vector2 bookTabClosedPosition = Vector2.Zero;
+        private Vector2 bookTabOpenPosition = new Vector2(0, -220);
+
+        private Vector2 codexClosedPosition = new Vector2(0, -1100);
+        private Vector2 codexOpenPosition = Vector2.Zero;
+
+        private float bookAnimationSpeed = 1800f;
 
         private bool panjurOpening;
         private bool panjurClosing;
@@ -157,7 +172,7 @@ private const int DialogueBubblePaddingY = 30;
 
             panjurButton = new Rectangle(1920 / 2 - 125, 640, 250, 250);
             skipCustomerButton = new Rectangle(1400, 100, 230, 55);
-
+            
             texMortar = content.Load<Texture2D>("mortar_0");
             texMortar1 = content.Load<Texture2D>("mortar_1");
             texMortarDust = content.Load<Texture2D>("Mortar_Dust_0");
@@ -167,6 +182,12 @@ private const int DialogueBubblePaddingY = 30;
             texTable = content.Load<Texture2D>("table");
             texWall = content.Load<Texture2D>("WallPaper_0");
             texBooktab = content.Load<Texture2D>("Book_Tab");
+            
+
+            bookTabPosition = bookTabClosedPosition;
+            codexPosition = codexClosedPosition;
+
+
             texLight = content.Load<Texture2D>("Light");
             
             binBox = new Rectangle(1650, 800, 120, 120);
@@ -204,7 +225,7 @@ private const int DialogueBubblePaddingY = 30;
 
             waterBox = new Rectangle(1100, 410, 90, 90); 
 
-            recipeBookButton = new Rectangle(1650, 30, 230, 55);
+            recipeBookButton = new Rectangle(1790, 90, 45, 105);
             recipeBookPanel = new Rectangle(260, 50, 1400, 920);
             closeRecipeBookButton = new Rectangle(1580, 70, 50, 45);
 
@@ -216,6 +237,7 @@ private const int DialogueBubblePaddingY = 30;
             CreateGlassesFromInventory();
             
             RefreshFromInventory();
+            texCodex = content.Load<Texture2D>("Codex_open");
         }
 
         public void Update(GameTime gameTime)
@@ -227,6 +249,7 @@ private const int DialogueBubblePaddingY = 30;
             HandlePanjurButton(gameTime, mp);
 
             float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+            UpdateRecipeBookAnimation(dt);
 
             dialogue.Update(gameTime);
 
@@ -295,14 +318,21 @@ private const int DialogueBubblePaddingY = 30;
                 StartIntroDialogue();
             }
 
-            if (recipeBookOpen)
-            {
-                if (LeftPressed() && closeRecipeBookButton.Contains(mp))
-                {
-                    recipeBookOpen = false;
-                }
-                return; 
-            }
+            if (recipeBookOpen || recipeBookAnimatingOpen || recipeBookAnimatingClose)
+{
+    if (recipeBookOpen && LeftPressed())
+    {
+        Rectangle codexRect = GetCodexRect();
+
+        if (!codexRect.Contains(mp))
+        {
+            recipeBookAnimatingClose = true;
+            recipeBookOpen = false;
+        }
+    }
+
+    return;
+}
 
             if (shopOpen)
             {
@@ -315,10 +345,10 @@ private const int DialogueBubblePaddingY = 30;
                 return; 
             }
 
-            if (LeftPressed() && recipeBookButton.Contains(mp))
+            if (LeftPressed() && recipeBookButton.Contains(mp) && !recipeBookOpen && !recipeBookAnimatingOpen && !recipeBookAnimatingClose)
             {
-                recipeBookOpen = true;
-                return;
+            recipeBookAnimatingOpen = true;
+            return;
             }
 
             if (LeftPressed() && shopButton.Contains(mp))
@@ -339,6 +369,56 @@ private const int DialogueBubblePaddingY = 30;
                 HandleGlassDrag(mp);
             }
         }
+        private void UpdateRecipeBookAnimation(float dt)
+        {
+        if (recipeBookAnimatingOpen)
+        {
+        bookTabPosition = MoveTowards(bookTabPosition, bookTabOpenPosition, bookAnimationSpeed * dt);
+        codexPosition = MoveTowards(codexPosition, codexOpenPosition, bookAnimationSpeed * dt);
+
+        if (bookTabPosition == bookTabOpenPosition && codexPosition == codexOpenPosition)
+        {
+            recipeBookAnimatingOpen = false;
+            recipeBookOpen = true;
+        }
+        }
+
+        if (recipeBookAnimatingClose)
+        {
+        bookTabPosition = MoveTowards(bookTabPosition, bookTabClosedPosition, bookAnimationSpeed * dt);
+        codexPosition = MoveTowards(codexPosition, codexClosedPosition, bookAnimationSpeed * dt);
+
+        if (bookTabPosition == bookTabClosedPosition && codexPosition == codexClosedPosition)
+        {
+            recipeBookAnimatingClose = false;
+            recipeBookOpen = false;
+        }
+        }
+        }
+
+        private Vector2 MoveTowards(Vector2 current, Vector2 target, float maxDistance)
+        {
+        Vector2 direction = target - current;
+        float distance = direction.Length();
+
+        if (distance <= maxDistance || distance == 0f)
+        return target;
+
+        direction.Normalize();
+        return current + direction * maxDistance;
+        }
+
+
+            private Rectangle GetCodexRect()
+{
+    return new Rectangle(
+        (int)codexPosition.X,
+        (int)codexPosition.Y,
+        texCodex.Width / 2,
+        texCodex.Height/2
+    );
+}
+
 
         public void Draw(SpriteBatch spriteBatch)
         {
@@ -399,7 +479,12 @@ private const int DialogueBubblePaddingY = 30;
                 spriteBatch.Draw(pixel, GetPanjurRopeButton(), Color.Blue * 0.0f);
             }
             
-            spriteBatch.Draw(texBooktab, Vector2.Zero, Color.White);
+            spriteBatch.Draw(texBooktab, bookTabPosition, Color.White);
+
+            if (recipeBookOpen || recipeBookAnimatingOpen || recipeBookAnimatingClose)
+            {
+            
+            }
             spriteBatch.Draw(texTable, Vector2.Zero, Color.White);
             
             DrawMoney(spriteBatch);     
@@ -409,10 +494,6 @@ private const int DialogueBubblePaddingY = 30;
             DrawGlasses(spriteBatch);
             DrawCraftedPotions(spriteBatch);
             DrawBin(spriteBatch);
-            
-            DrawBox(spriteBatch, recipeBookButton, Color.DarkSlateGray);
-            spriteBatch.DrawString(font, "Recipe Book", new Vector2(recipeBookButton.X + 35, recipeBookButton.Y + 15), Color.White);
-
             DrawBox(spriteBatch, shopButton, Color.DarkOliveGreen);
             spriteBatch.DrawString(font, "Open Shop", new Vector2(shopButton.X + 45, shopButton.Y + 15), Color.White);
 
@@ -445,11 +526,13 @@ private const int DialogueBubblePaddingY = 30;
             {
                 DrawShop(spriteBatch);
             }
-
+            spriteBatch.Draw(texCodex, codexPosition, Color.White); 
             if (recipeBookOpen)
             {
-                DrawRecipeBook(spriteBatch);
-            }
+            DrawRecipeBookContent(spriteBatch);
+            }     
+
+                 
         }
     }
 
