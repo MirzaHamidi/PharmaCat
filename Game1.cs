@@ -17,10 +17,11 @@ public class Game1 : Game
     {
         MainMenu,
         Jungle,
-        Crafting,
+        Crafting, // Shop artık Crafting'in içinde olduğu için buradan kaldırıldı!
         Paused,
         GameOver
     }
+    
     private MainMenuScene mainMenuScene;
     private JungleScene jungleScene;
     private CraftingScene craftingScene;
@@ -63,7 +64,7 @@ public class Game1 : Game
 
     protected override void LoadContent()
     {
-        font = Content.Load<SpriteFont>("newRocker");
+        font = Content.Load<SpriteFont>("Font");
         _spriteBatch = new SpriteBatch(GraphicsDevice);
 
         pixel = new Texture2D(GraphicsDevice, 1, 1);
@@ -71,8 +72,7 @@ public class Game1 : Game
 
         table = Content.Load<Texture2D>("table");
         Wall = Content.Load<Texture2D>("WallPaper_0");
-        mainMenuScene = new MainMenuScene();
-        mainMenuScene.Load();
+        
         craftingScene = new CraftingScene();
         craftingScene.Load(); 
 
@@ -83,6 +83,9 @@ public class Game1 : Game
 
         jungleScene = new JungleScene();
         jungleScene.Load(Content, GraphicsDevice, inventory);
+
+        mainMenuScene = new MainMenuScene();
+        mainMenuScene.Load(Content);
 
         // --- KÖPRÜLER BURADA KURULUYOR ---
         
@@ -151,7 +154,6 @@ public class Game1 : Game
                 }
                 break;
 
-
             case GameState.Crafting:
                 craftingScene.Update(gameTime);
                 craftGreyboxSystem.Update(gameTime);
@@ -168,8 +170,10 @@ public class Game1 : Game
         switch (_gameState)
         {
             case GameState.MainMenu:
-                GraphicsDevice.Clear(Color.CornflowerBlue);
-                mainMenuScene.Draw();
+                GraphicsDevice.Clear(Color.Black);
+                _spriteBatch.Begin();
+                mainMenuScene.Draw(_spriteBatch);
+                _spriteBatch.End();
                 break;
 
             case GameState.Jungle:
@@ -185,7 +189,6 @@ public class Game1 : Game
                 craftGreyboxSystem.Draw(_spriteBatch);
                 _spriteBatch.End();
 
-                // Fiyat belirleme kutusunun arkaplanların altında ezilmemesi için en üste çizdiriliyor
                 craftingScene.Draw(_spriteBatch);      
                 break;
         }

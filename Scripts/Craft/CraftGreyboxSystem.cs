@@ -530,7 +530,7 @@ namespace PharmaCat.Scripts
             spriteBatch.Draw(texCodex, codexPosition, Color.White); 
             if (recipeBookOpen)
             {
-            DrawRecipeBookContent(spriteBatch);
+            //DrawRecipeBookContent(spriteBatch);
             }     
 
                  
