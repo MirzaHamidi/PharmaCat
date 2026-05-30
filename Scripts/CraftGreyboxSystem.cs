@@ -101,11 +101,17 @@ namespace PharmaCat.Scripts
         private enum CustomerEmotion { Silhouette, Neutral, Happy, Angry }
         private CustomerEmotion currentEmotion;
         
-        // DÜZENLEME: Karakter daha makul bir hizaya çekildi (Y=240)
         private Rectangle customerRect = new Rectangle(1920 / 2 - 250, 240, 500, 600);
         
         private float slideOffset = 0f;
         private bool itemsSlidingOut = false;
+
+        private int haggleAttempts = 0;
+        private bool isCustomerLeaving = false;
+        private bool isCustomerEntering = false;
+        private float customerLeaveTimer = 0f;
+        private float customerXOffset = 0f;
+        private Rectangle skipCustomerButton;
 
         public CraftGreyboxSystem(Texture2D pixel, SpriteFont font, InventorySystem inventory, ContentManager content)
         {
@@ -141,6 +147,8 @@ namespace PharmaCat.Scripts
             panjurButton = new Rectangle(1920 / 2 - 125, 640, 250, 250);
             panjurRopeButton = new Rectangle(1920 / 2 - 80, 520, 160, 220);
             
+            skipCustomerButton = new Rectangle(1400, 100, 230, 55);
+
             texMortar = content.Load<Texture2D>("mortar_0");
             texMortar1 = content.Load<Texture2D>("mortar_1");
             texMortarDust = content.Load<Texture2D>("Mortar_Dust_0");
@@ -198,7 +206,6 @@ namespace PharmaCat.Scripts
             CreateJarsFromInventory();
             CreateGlassesFromInventory();
             
-            // Oyun ilk açıldığında kapıda bekleyen ilk müşteriyi hazırla
             RefreshFromInventory();
         }
 
@@ -219,6 +226,49 @@ namespace PharmaCat.Scripts
                 if (slideOffset > 2000f)
                 {
                     slideOffset = 2000f;
+                }
+            }
+
+            if (currentCustomer != null && currentEmotion != CustomerEmotion.Silhouette && slideOffset >= 2000f)
+            {
+                // DÜZENLEME: Skip Butonu artık kusursuz çalışıyor!
+                if (LeftPressed() && skipCustomerButton.Contains(mp) && !isCustomerLeaving && !isCustomerEntering)
+                {
+                    currentEmotion = CustomerEmotion.Angry;
+                    isCustomerLeaving = true;
+                }
+
+                if (isCustomerLeaving)
+                {
+                    customerLeaveTimer += dt;
+                    if (customerLeaveTimer > 1.2f) 
+                    {
+                        customerXOffset += 2000f * dt; 
+                        
+                        if (customerXOffset > 1500f)
+                        {
+                            currentCustomer = new Customers();
+                            string[] chars = new string[] { "a", "b", "c", "d", "e", "f", "g" };
+                            currentCharacter = chars[random.Next(chars.Length)];
+                            currentEmotion = CustomerEmotion.Neutral;
+                            
+                            haggleAttempts = 0;
+                            isCustomerLeaving = false;
+                            isCustomerEntering = true;
+                            
+                            customerXOffset = -1500f; 
+                            customerLeaveTimer = 0f;
+                        }
+                    }
+                }
+                else if (isCustomerEntering)
+                {
+                    customerXOffset += 2000f * dt; 
+                    if (customerXOffset >= 0f)
+                    {
+                        customerXOffset = 0f;
+                        isCustomerEntering = false;
+                    }
                 }
             }
 
@@ -254,14 +304,15 @@ namespace PharmaCat.Scripts
                 return;
             }
             
-            if (!itemsSlidingOut)
+            // DÜZENLEME: Sürükleme mekaniği kontrolü sağlama alındı
+            if (slideOffset == 0f && !itemsSlidingOut)
             {
                 HandleJarDrag(mp);
                 HandleWater(mp);
                 HandleGrinderDrag(gameTime, mp);
                 HandleMortarDrag(mp);
             }
-            else
+            else if (slideOffset >= 2000f)
             {
                 HandleGlassDrag(mp);
             }
@@ -328,7 +379,6 @@ namespace PharmaCat.Scripts
                 
                 itemsSlidingOut = true;
 
-                // DÜZENLEME: Yavaşça aydınlanma efektinin başlaması için silüetten normale geçir
                 currentEmotion = CustomerEmotion.Neutral;
             }
 
@@ -366,7 +416,7 @@ namespace PharmaCat.Scripts
                 ropeGoingUp = true;
                 panjurClosing = true;
                 
-                // DÜZENLEME: Kapanırken eşyalar hemen geri gelmeyecek, arkada gizli kalacak!
+                // DÜZENLEME: Kapanırken itemsSlidingIn aktif ETMİYORUZ, arkada gizli kalacaklar.
             }
 
             if (ropeGoingUp)
@@ -385,12 +435,13 @@ namespace PharmaCat.Scripts
             {
                 panjurPosition.Y += panjurSpeed * dt;
 
-                // Tamamen kapandığında
                 if (panjurPosition.Y >= panjurClosedY)
                 {
                     panjurPosition.Y = panjurClosedY;
                     panjurClosing = false;
+                    panjurButtonVisible = true;
                     
+                    currentCustomer = null;
                     OnShopFinished?.Invoke();
                 }
             }
@@ -414,13 +465,11 @@ namespace PharmaCat.Scripts
             CreateJarsFromInventory();
             CreateGlassesFromInventory();
 
-            // DÜZENLEME: Jungle'dan Craft'a geçildiğinde yeni silüeti kapıda hazırla!
             currentCustomer = new Customers();
             string[] chars = new string[] { "a", "b", "c", "d", "e", "f", "g" };
             currentCharacter = chars[random.Next(chars.Length)];
             currentEmotion = CustomerEmotion.Silhouette;
 
-            // Masayı ve panjuru tamamen sıfırla
             slideOffset = 0f;
             itemsSlidingOut = false;
             panjurButtonVisible = true;
@@ -430,6 +479,12 @@ namespace PharmaCat.Scripts
             panjurClosing = false;
             panjurPosition.Y = panjurClosedY;
             panjurRopePosition.Y = ropeHiddenY;
+            
+            haggleAttempts = 0;
+            isCustomerLeaving = false;
+            isCustomerEntering = false;
+            customerLeaveTimer = 0f;
+            customerXOffset = 0f;
         }
 
         private void HandleJarDrag(Point mp)
@@ -689,7 +744,7 @@ namespace PharmaCat.Scripts
         
         private void HandleGlassDrag(Point mp)
         {
-            if (currentCustomer == null || currentEmotion == CustomerEmotion.Silhouette) 
+            if (currentCustomer == null || currentEmotion == CustomerEmotion.Silhouette || isCustomerLeaving || isCustomerEntering) 
             {
                 return;
             }
@@ -720,8 +775,6 @@ namespace PharmaCat.Scripts
                     draggedGlass.Bounds.Height
                 );
                 
-                // DÜZENLEME: Şişeler masadayken yanlışlıkla satış olmaması için,
-                // sadece müşterinin kafasına/gövdesine (masanın üstüne) bırakırsan satılır!
                 Rectangle sellZone = new Rectangle(customerRect.X, customerRect.Y, customerRect.Width, 400);
 
                 if (dragRect.Intersects(sellZone))
@@ -732,7 +785,6 @@ namespace PharmaCat.Scripts
                     }
                     else
                     {
-                        // Hata önleme: UI açılmazsa anında 25 dolara otomatik satar!
                         ResolveSale(draggedGlass, 25);
                     }
                 }
@@ -744,15 +796,25 @@ namespace PharmaCat.Scripts
 
         public void ResolveSale(PotionGlassBox glass, int price)
         {
+            if (isCustomerLeaving || isCustomerEntering) return;
+
             if (price <= currentCustomer.MaxPrice && glass.PotionName == currentCustomer.WantedPotion)
             {
                 currentEmotion = CustomerEmotion.Happy;
                 inventory.AddMoney(price);
                 glass.IsFilled = false;
+                
+                isCustomerLeaving = true; 
             }
             else
             {
                 currentEmotion = CustomerEmotion.Angry;
+                haggleAttempts++; 
+                
+                if (haggleAttempts >= 3)
+                {
+                    isCustomerLeaving = true; 
+                }
             }
         }
 
@@ -946,7 +1008,6 @@ namespace PharmaCat.Scripts
         {
             spriteBatch.Draw(texWall, Vector2.Zero, Color.White);
 
-            // DÜZENLEME: Müşterinin yavaş yavaş kararıp aydınlanması
             if (currentCustomer != null)
             {
                 Texture2D cTex = texCustBase[currentCharacter];
@@ -960,17 +1021,25 @@ namespace PharmaCat.Scripts
                     cTex = texCustAngry[currentCharacter];
                 }
                 
-                // Kepengin konumuna göre matematiksel bir geçiş hesapla (0 = Siyah, 1 = Normal Renk)
                 float lerpAmount = (panjurPosition.Y - panjurClosedY) / (panjurOpenY - panjurClosedY);
                 lerpAmount = MathHelper.Clamp(lerpAmount, 0f, 1f);
                 
-                Color cCol = Color.Lerp(Color.Black, Color.White, lerpAmount);
-                spriteBatch.Draw(cTex, customerRect, cCol);
+                // DÜZENLEME: Karakter saydamlaşmayacak, sadece kararacak (Alpha değeri 1f'de sabit!)
+                Color cCol = new Color(lerpAmount, lerpAmount, lerpAmount, 1f);
 
-                // Konuşma balonu da aynı yavaşlıkta belirip kaybolsun
+                Rectangle currentCustRect = new Rectangle(
+                    customerRect.X + (int)customerXOffset, 
+                    customerRect.Y, 
+                    customerRect.Width, 
+                    customerRect.Height
+                );
+
+                spriteBatch.Draw(cTex, currentCustRect, cCol);
+
                 if (currentEmotion != CustomerEmotion.Silhouette && lerpAmount > 0.05f)
                 {
-                    string text = currentCustomer.CurrentDialogue;
+                    // DÜZENLEME: Kullanıcı iksirleri rahat test etsin diye WantedPotion ipucu eklendi!
+                    string text = currentCustomer.CurrentDialogue + $"\n(Needs: {currentCustomer.WantedPotion})";
                     
                     if (currentEmotion == CustomerEmotion.Happy) 
                     {
@@ -978,11 +1047,13 @@ namespace PharmaCat.Scripts
                     }
                     else if (currentEmotion == CustomerEmotion.Angry) 
                     {
-                        text = "Are you trying to scam me?!";
+                        if (isCustomerLeaving) text = "I've had enough. I'm leaving!";
+                        else if (haggleAttempts == 1) text = "Is this a joke? That's not what I asked for!";
+                        else if (haggleAttempts == 2) text = "Are you trying to scam me? One last chance!";
                     }
                     
                     Color textCol = Color.White * lerpAmount;
-                    spriteBatch.DrawString(font, text, new Vector2(customerRect.Right - 50, customerRect.Top + 50), textCol);
+                    spriteBatch.DrawString(font, text, new Vector2(currentCustRect.Right - 50, currentCustRect.Top + 50), textCol);
                 }
             }
 
@@ -1016,6 +1087,12 @@ namespace PharmaCat.Scripts
 
             DrawBox(spriteBatch, shopButton, Color.DarkOliveGreen);
             spriteBatch.DrawString(font, "Open Shop", new Vector2(shopButton.X + 45, shopButton.Y + 15), Color.White);
+
+            if (currentCustomer != null && currentEmotion != CustomerEmotion.Silhouette && slideOffset >= 2000f)
+            {
+                DrawBox(spriteBatch, skipCustomerButton, Color.DarkRed);
+                spriteBatch.DrawString(font, "Next Customer", new Vector2(skipCustomerButton.X + 25, skipCustomerButton.Y + 15), Color.White);
+            }
 
             if (draggingMortar && hasMixedPotion)
             {
