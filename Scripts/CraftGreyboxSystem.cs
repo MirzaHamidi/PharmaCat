@@ -132,7 +132,7 @@ namespace PharmaCat.Scripts
             texPanjur = content.Load<Texture2D>("Panjur_5");
             texPanjurip = content.Load<Texture2D>("Panjur_ip_6");
 
-            string[] chars = new string[] { "a", "b", "c", "d", "e", "f", "g" };
+            string[] chars = new string[] { "a", "b", "c", "d", "e", "f", "g" ,"h"};
             
             foreach(var c in chars)
             {
@@ -248,7 +248,7 @@ namespace PharmaCat.Scripts
                         if (customerXOffset > 1500f)
                         {
                             currentCustomer = new Customers();
-                            string[] chars = new string[] { "a", "b", "c", "d", "e", "f", "g" };
+                            string[] chars = new string[] { "a", "b", "c", "d", "e", "f", "g" ,"h"};
                             currentCharacter = chars[random.Next(chars.Length)];
                             currentEmotion = CustomerEmotion.Neutral;
                             

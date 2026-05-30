@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PipelineBuildEvent xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <SourceFile>C:/Users/hp/Documents/PharmaCat/Content/Font.spritefont</SourceFile>
-  <SourceTime>2026-05-12T15:44:03.2915006+03:00</SourceTime>
-  <DestFile>C:/Users/hp/Documents/PharmaCat/Content/bin/DesktopGL/Content/Font.xnb</DestFile>
-  <DestTime>2026-05-30T14:28:16.1822063+03:00</DestTime>
+  <SourceFile>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/Content/Font.spritefont</SourceFile>
+  <SourceTime>2026-05-29T16:16:48.8286489+03:00</SourceTime>
+  <DestFile>C:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/Content/bin/DesktopGL/Content/Font.xnb</DestFile>
+  <DestTime>2026-05-30T17:09:07.5718849+03:00</DestTime>
   <Importer>FontDescriptionImporter</Importer>
   <ImporterTime>2025-10-20T17:25:32+03:00</ImporterTime>
   <Processor>FontDescriptionProcessor</Processor>
