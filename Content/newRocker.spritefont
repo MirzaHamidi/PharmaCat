@@ -3,7 +3,7 @@
   <Asset Type="Graphics:FontDescription">
 
     <FontName>New Rocker</FontName>
-    <Size>26</Size>
+    <Size>18</Size>
     <Spacing>1</Spacing>
     <UseKerning>true</UseKerning>
     <Style>Regular</Style>
