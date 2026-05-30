@@ -13,7 +13,7 @@ namespace PharmaCat;
 
 public class Game1 : Game
 {
-    private enum GameState // these are the scenes of the game, we will switch between them
+    private enum GameState 
     {
         MainMenu,
         Jungle,
@@ -27,13 +27,13 @@ public class Game1 : Game
     private JungleScene jungleScene;
     private CraftingScene craftingScene;
     private SpriteFont font;
-    private GameState _gameState = GameState.MainMenu; // start at main menu
+    private GameState _gameState = GameState.MainMenu; 
     private Texture2D table;
     private Texture2D Wall;
-    private GraphicsDeviceManager _graphics; // graphics manager
-    private SpriteBatch _spriteBatch; // for drawing sprites
-    private InputState _input; // input class call
-    private InventorySystem inventory; // inventory system call
+    private GraphicsDeviceManager _graphics; 
+    private SpriteBatch _spriteBatch; 
+    private InputState _input; 
+    private InventorySystem inventory; 
     
     private Random random = new Random();
     
@@ -41,19 +41,18 @@ public class Game1 : Game
     
     private CraftGreyboxSystem craftGreyboxSystem;
     
-    // EKLENDİ: Transition Manager
     private TransitionManager transitionManager;
     private Texture2D kepenkTexture;
 
     public Game1()
     {
         _graphics = new GraphicsDeviceManager(this);
-        Content.RootDirectory = "Content"; // content folder
-        IsMouseVisible = true; // show mouse cursor
-        _graphics.PreferredBackBufferWidth = 1920; // set resolution to 1080p
-        _graphics.PreferredBackBufferHeight = 1080; // set resolution to 1080p
-        _graphics.IsFullScreen = false; // start in windowed mode
-        _graphics.ApplyChanges(); // apply graphics settings
+        Content.RootDirectory = "Content"; 
+        IsMouseVisible = true; 
+        _graphics.PreferredBackBufferWidth = 1920; 
+        _graphics.PreferredBackBufferHeight = 1080; 
+        _graphics.IsFullScreen = false; 
+        _graphics.ApplyChanges(); 
     }
 
     protected override void Initialize()
@@ -65,58 +64,78 @@ public class Game1 : Game
     }
 
     protected override void LoadContent()
-{
-    font = Content.Load<SpriteFont>("Font");
-    _spriteBatch = new SpriteBatch(GraphicsDevice);
-
-    pixel = new Texture2D(GraphicsDevice, 1, 1);
-    pixel.SetData(new[] { Color.White });
-
-    table = Content.Load<Texture2D>("table");
-    Wall = Content.Load<Texture2D>("WallPaper_0");
-    craftingScene = new CraftingScene();
-    craftingScene.Load(table);
-
-    craftGreyboxSystem = new CraftGreyboxSystem(pixel, font, inventory, Content);
-
-    kepenkTexture = Content.Load<Texture2D>("kepenk");
-    transitionManager = new TransitionManager(pixel, kepenkTexture);
-
-    jungleScene = new JungleScene();
-    jungleScene.Load(Content, GraphicsDevice, inventory);
-
-    shopScene = new ShopScene();
-    shopScene.Load(inventory, () =>
     {
-        transitionManager.StartTransition(TransitionStyle.Shutter, () =>
-        {
-            jungleScene.ResetDay();
-            craftGreyboxSystem.RefreshFromInventory();
-            _gameState = GameState.Jungle;
-        });
-    });
+        font = Content.Load<SpriteFont>("Font");
+        _spriteBatch = new SpriteBatch(GraphicsDevice);
 
-    mainMenuScene = new MainMenuScene();
-    mainMenuScene.Load();
-}
+        pixel = new Texture2D(GraphicsDevice, 1, 1);
+        pixel.SetData(new[] { Color.White });
+
+        table = Content.Load<Texture2D>("table");
+        Wall = Content.Load<Texture2D>("WallPaper_0");
+        
+        craftingScene = new CraftingScene();
+        craftingScene.Load(); 
+
+        craftGreyboxSystem = new CraftGreyboxSystem(pixel, font, inventory, Content);
+
+        kepenkTexture = Content.Load<Texture2D>("kepenk");
+        transitionManager = new TransitionManager(pixel, kepenkTexture);
+
+        jungleScene = new JungleScene();
+        jungleScene.Load(Content, GraphicsDevice, inventory);
+
+        shopScene = new ShopScene();
+        shopScene.Load(inventory, () =>
+        {
+            transitionManager.StartTransition(TransitionStyle.Shutter, () =>
+            {
+                jungleScene.ResetDay();
+                craftGreyboxSystem.RefreshFromInventory();
+                _gameState = GameState.Jungle;
+            });
+        });
+
+        mainMenuScene = new MainMenuScene();
+        mainMenuScene.Load();
+
+        // --- KÖPRÜLER BURADA KURULUYOR ---
+        
+        craftGreyboxSystem.OnSellAttempt = (glass) => 
+        {
+            craftingScene.OpenSellUI(glass);
+        };
+
+        craftingScene.OnSellConfirmed = (glass, price) => 
+        {
+            craftGreyboxSystem.ResolveSale(glass, price);
+        };
+
+        craftGreyboxSystem.OnShopFinished = () =>
+        {
+            transitionManager.StartTransition(TransitionStyle.Fade, () =>
+            {
+                jungleScene.ResetDay();
+                craftGreyboxSystem.RefreshFromInventory();
+                _gameState = GameState.Jungle;
+            });
+        };
+    }
+
     protected override void Update(GameTime gameTime)
     {
-        _input.Update(); // update input states
+        _input.Update(); 
 
-        if (_input.FullScreen()) // toggle fullscreen on F4 key press the bindings are in InputState.cs
+        if (_input.FullScreen()) 
         {
             _graphics.IsFullScreen = !_graphics.IsFullScreen;
             _graphics.ApplyChanges();
         }
 
-        if (Keyboard.GetState().IsKeyDown(Keys.Escape)) // exit game on escape key 
+        if (Keyboard.GetState().IsKeyDown(Keys.Escape)) 
         {
             Exit();
         }
-
-        // Eğer şu an bir geçiş (transition) animasyonu oynuyorsa sahne mekaniklerini dondurabilirsin
-        // veya arkada akmaya devam edebilirler. Biz çalışmasına izin verip, sadece Inputları kısıtlayabiliriz.
-        // Şimdilik sorunsuz akması için Update'leri normal bırakıyoruz.
 
         switch (_gameState) 
         {
@@ -126,7 +145,6 @@ public class Game1 : Game
                 if (mainMenuScene.StartRequested)
                 {
                     mainMenuScene.ResetRequest();
-                    // Main Menu -> Jungle Geçişi (Kararma)
                     transitionManager.StartTransition(TransitionStyle.Fade, () => 
                     {
                         _gameState = GameState.Jungle;
@@ -140,7 +158,6 @@ public class Game1 : Game
                 if (jungleScene.CraftingRequested)
                 {
                     jungleScene.ResetRequest();
-                    // DÜZENLEME: Jungle -> Crafting Geçişi (Smooth Kararma)
                     transitionManager.StartTransition(TransitionStyle.Fade, () =>
                     {
                         craftGreyboxSystem.RefreshFromInventory();
@@ -156,19 +173,9 @@ public class Game1 : Game
             case GameState.Crafting:
                 craftingScene.Update(gameTime);
                 craftGreyboxSystem.Update(gameTime);
-                if (craftingScene.GoToShopRequested)
-                {
-                    craftingScene.ResetRequest();
-                    // DÜZENLEME: Crafting -> Shop Geçişi (Kepenk)
-                    transitionManager.StartTransition(TransitionStyle.Shutter, () =>
-                    {
-                        _gameState = GameState.Shop;
-                    });
-                }
                 break;
         }
 
-        // EKLENDİ: Transition Manager'ı Güncelle
         transitionManager.Update(gameTime);
 
         base.Update(gameTime);
@@ -200,14 +207,16 @@ public class Game1 : Game
 
             case GameState.Crafting:
                 GraphicsDevice.Clear(Color.Black);
+                
                 _spriteBatch.Begin();
-                craftingScene.Draw(_spriteBatch);
                 craftGreyboxSystem.Draw(_spriteBatch);
                 _spriteBatch.End();
+
+                // Fiyat belirleme kutusunun arkaplanların altında ezilmemesi için en üste çizdiriliyor
+                craftingScene.Draw(_spriteBatch);      
                 break;
         }
 
-        // EKLENDİ: Transition animasyonu bütün sahnelerin "en üstünde" çizilmeli
         _spriteBatch.Begin();
         transitionManager.Draw(_spriteBatch);
         _spriteBatch.End();

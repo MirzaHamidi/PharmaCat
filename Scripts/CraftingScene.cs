@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Myra.Graphics2D.UI;
@@ -7,36 +8,63 @@ namespace PharmaCat.Scripts
     internal class CraftingScene
     {
         private Desktop craftingDesktop;
-        private TextButton goToShopButton;
-        private Texture2D tableTexture;
+        private Window sellWindow;
+        private TextBox priceInput;
+        private PotionGlassBox currentSellingGlass;
 
-        public bool GoToShopRequested { get; private set; }
+        public Action<PotionGlassBox, int> OnSellConfirmed;
 
-        public void Load(Texture2D tableTexture)
+        public void Load() 
         {
-            this.tableTexture = tableTexture;
-
             var panel = new Panel();
 
-            // DÜZENLEME: Go to Shop butonu ekranın alt ortasına (güvenli bölgeye) alındı
-            goToShopButton = new TextButton
+            sellWindow = new Window
             {
-                Text = "Go to Shop",
-                Width = 250,
-                Height = 70,
-                Left = 835, // 1920 piksel genişliğin tam ortası
-                Top = 920   // Ekranın alt kısmı
+                Title = "Offer Price",
+                Left = 1920 / 2 - 150,
+                Top = 1080 / 2 - 100,
+                Width = 300,
+                Height = 200,
+                Visible = false
             };
 
-            goToShopButton.Click += (s, a) =>
+            var verticalStack = new VerticalStackPanel { Spacing = 15, Padding = new Myra.Graphics2D.Thickness(20) };
+            var lbl = new Label { Text = "Set your price ($):" };
+            priceInput = new TextBox { Text = "20" };
+            
+            var sellBtn = new TextButton { Text = "Offer to Customer", Width = 200, Height = 40 };
+            sellBtn.Click += (s, a) =>
             {
-                GoToShopRequested = true;
+                if (int.TryParse(priceInput.Text, out int price))
+                {
+                    OnSellConfirmed?.Invoke(currentSellingGlass, price);
+                    sellWindow.Visible = false;
+                }
             };
 
-            panel.Widgets.Add(goToShopButton);
+            var cancelBtn = new TextButton { Text = "Cancel", Width = 200, Height = 40 };
+            cancelBtn.Click += (s, a) =>
+            {
+                sellWindow.Visible = false;
+            };
+
+            verticalStack.Widgets.Add(lbl);
+            verticalStack.Widgets.Add(priceInput);
+            verticalStack.Widgets.Add(sellBtn);
+            verticalStack.Widgets.Add(cancelBtn);
+            sellWindow.Content = verticalStack;
+
+            panel.Widgets.Add(sellWindow);
 
             craftingDesktop = new Desktop();
             craftingDesktop.Root = panel;
+        }
+
+        public void OpenSellUI(PotionGlassBox glass)
+        {
+            currentSellingGlass = glass;
+            priceInput.Text = "20"; 
+            sellWindow.Visible = true;
         }
 
         public void Update(GameTime gameTime)
@@ -45,11 +73,7 @@ namespace PharmaCat.Scripts
 
         public void Draw(SpriteBatch spriteBatch)
         {
-        craftingDesktop?.Render();
-        }
-        public void ResetRequest()
-        {
-            GoToShopRequested = false;
+            craftingDesktop?.Render();
         }
     }
 }

@@ -23,7 +23,7 @@ namespace PharmaCat.Scripts
             "Hey, I need some help with a problem.",
             "Hey did you hear about Mirza? They say he is a great game maker.",
             "I heard you have some good stuff for sale.",
-            "Hello, have you seen Anıl's new game? I heard it's really good like the gravity thing woaw anyways."
+            "Hello, have you seen Anil's new game? I heard it's really good like the gravity thing woaw anyways."
         };
 
         private Dictionary<string, List<string>> potionDialogues =
@@ -35,7 +35,7 @@ namespace PharmaCat.Scripts
                     {
                         "I need something for sleep...",
                         "I need something to cure my insomnia.",
-                        "I haven’t slept for days."
+                        "I haven't slept for days."
                     }
                 },
                 {
@@ -230,7 +230,6 @@ namespace PharmaCat.Scripts
 
         private void GenerateDialogue()
         {
-            // Oyundaki TÜM iksirlerin havuzu
             string[] potionTypes =
             {
                 "Sleep Potion", "Memory Potion", "Love Potion", "Anti-Curse Potion",
@@ -244,7 +243,6 @@ namespace PharmaCat.Scripts
 
             WantedPotion = potionTypes[random.Next(potionTypes.Length)];
 
-            // Fiyat aralığını biraz daha esnek ve heyecanlı hale getirdik
             MaxPrice = random.Next(15, 46);
 
             string greeting = greetings[random.Next(greetings.Count)];

@@ -4,9 +4,71 @@
   <Platform>DesktopGL</Platform>
   <Config />
   <SourceFiles>
-    <File>c:/Users/mmirz/OneDrive/Masaüstü/PharmaCat/PharmaCat/PharmaCat/Content/PharmaCatTileMap.png</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/../TileSet/PharmaCatTileMap.png</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/agacmap.png</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/b_angry.png</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/b_happy.png</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/b.png</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/bitkimap.png</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/Book_tab.png</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/c_angry.png</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/c_happy.png</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/c.png</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/cat.png</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/d_angry.png</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/d_happy.png</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/d.png</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/e_angry.png</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/e_happy.png</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/e.png</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/f_angry.png</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/f_happy.png</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/f.png</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/Font.spritefont</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/Light_3_char_u╠êstu╠êne.png</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/Mortar_0.png</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/Mortar_1.png</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/Mortar_Ball.png</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/Mortar_Dust_0.png</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/Mortar_Dust_1.png</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/Panjur_5.png</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/Panjur_ip_6.png</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/table.png</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/treeset.png</File>
+    <File>C:/Users/hp/Documents/PharmaCat/Content/WallPaper_0.png</File>
   </SourceFiles>
   <DestFiles>
     <File>mapjungle.png</File>
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File>Light.png</File>
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
   </DestFiles>
 </SourceFileCollection>
