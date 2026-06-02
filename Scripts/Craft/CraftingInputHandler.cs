@@ -288,7 +288,7 @@ private Color GetPotionColor(string potionName)
         {
             Rectangle outerCollider = mortar.Bounds;
 
-            int leftWallThickness = 55;
+            int leftWallThickness = 35;
             int rightWallThickness = 55;
 
             int bottomWallThickness = 35;

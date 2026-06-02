@@ -91,12 +91,17 @@ public class Game1 : Game
         
         craftGreyboxSystem.OnSellAttempt = (glass) => 
         {
-            craftingScene.OpenSellUI(glass);
+        craftingScene.OpenPotionChoiceUI(glass);
         };
 
         craftingScene.OnSellConfirmed = (glass, price) => 
         {
-            craftGreyboxSystem.ResolveSale(glass, price);
+        craftGreyboxSystem.ResolveSale(glass, price);
+        };
+
+        craftingScene.OnUseConfirmed = (glass) =>
+        {
+        craftGreyboxSystem.UsePotion(glass);
         };
 
         craftGreyboxSystem.OnShopFinished = () =>

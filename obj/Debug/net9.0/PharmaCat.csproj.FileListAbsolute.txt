@@ -484,3 +484,6 @@ C:\Users\hp\Documents\PharmaCat\bin\Debug\net9.0\Content\Codex_open.png
 C:\Users\hp\Documents\PharmaCat\bin\Debug\net9.0\Content\1.png
 C:\Users\hp\Documents\PharmaCat\bin\Debug\net9.0\Content\2.png
 C:\Users\hp\Documents\PharmaCat\bin\Debug\net9.0\Content\3.png
+C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\bin\Debug\net9.0\Content\1.png
+C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\bin\Debug\net9.0\Content\2.png
+C:\Users\mmirz\OneDrive\Masaüstü\PharmaCat\bin\Debug\net9.0\Content\3.png

@@ -19,7 +19,7 @@ namespace PharmaCat.Scripts
             {
                 Rectangle herbButton = new Rectangle(shopPanel.X + 40 + (i % 4) * 230, shopPanel.Y + 90 + (i / 4) * 80, 210, 55);
                 
-                if (herbButton.Contains(mp) && inventory.SpendMoney(15))
+                if (herbButton.Contains(mp) && inventory.SpendMoney(5))
                 {
                     inventory.AddHerb(herbNames[i], 1);
                     CreateJarsFromInventory();
@@ -27,14 +27,14 @@ namespace PharmaCat.Scripts
             }
 
             Rectangle buyBottle = new Rectangle(shopPanel.X + 40, shopPanel.Y + 280, 210, 55);
-            if (buyBottle.Contains(mp) && inventory.SpendMoney(25))
+            if (buyBottle.Contains(mp) && inventory.SpendMoney(10))
             {
                 inventory.EmptyBottleCount++;
                 CreateGlassesFromInventory();
             }
 
             Rectangle buyMortar = new Rectangle(shopPanel.X + 270, shopPanel.Y + 280, 250, 55);
-            if (buyMortar.Contains(mp) && inventory.SpendMoney(80))
+            if (buyMortar.Contains(mp) && inventory.SpendMoney(40))
             {
                 inventory.MortarLevel++;
             }
@@ -53,14 +53,14 @@ namespace PharmaCat.Scripts
             for (int i = 0; i < herbNames.Length; i++)
             {
                 Rectangle herbButton = new Rectangle(shopPanel.X + 40 + (i % 4) * 230, shopPanel.Y + 90 + (i / 4) * 80, 210, 55);
-                DrawShopButton(sb, herbButton, herbNames[i] + " $15");
+                DrawShopButton(sb, herbButton, herbNames[i] + " $5");
             }
 
             Rectangle buyBottle = new Rectangle(shopPanel.X + 40, shopPanel.Y + 280, 210, 55);
-            DrawShopButton(sb, buyBottle, "Bottle $25");
+            DrawShopButton(sb, buyBottle, "Bottle $10");
 
             Rectangle buyMortar = new Rectangle(shopPanel.X + 270, shopPanel.Y + 280, 250, 55);
-            DrawShopButton(sb, buyMortar, "Upgrade Mortar $80");
+            DrawShopButton(sb, buyMortar, "Upgrade Mortar $40");
         }
 
         private void DrawShopButton(SpriteBatch sb, Rectangle r, string text)

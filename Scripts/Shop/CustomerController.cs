@@ -191,31 +191,60 @@ namespace PharmaCat.Scripts
 
             if (correctPotion && affordable)
             {
-                currentEmotion = CustomerEmotion.Happy;
-                inventory.AddMoney(price);
-                inventory.RemovePotion(glass.PotionName, 1);
+            currentEmotion = CustomerEmotion.Happy;
+            inventory.AddMoney(price);
+            inventory.RemovePotion(glass.PotionName, 1);
 
-                currentCustomer.MarkPotionBought(glass.PotionName);
-                glass.IsFilled = false;
-                glass.PotionName = "";
-                glass.FillColor = Color.Transparent;
+            currentCustomer.MarkPotionBought(glass.PotionName);
+            glass.IsFilled = false;
+            glass.PotionName = "";
+            glass.FillColor = Color.Transparent;
 
-                CreateGlassesFromInventory();
+            CreateGlassesFromInventory();
 
-                StartResultDialogue("Thank you! This should solve my problem.", true);
+            StartResultDialogue("Thank you! This should solve my problem.", true);
+            }
+            else if (!correctPotion && persuasionActive)
+            {
+            int maxPersuasionPrice = currentCustomer.MaxPrice + 25;
+
+            if (price <= maxPersuasionPrice)
+            {
+            currentEmotion = CustomerEmotion.Happy;
+            inventory.AddMoney(price);
+            inventory.RemovePotion(glass.PotionName, 1);
+
+            currentCustomer.MarkPotionBought(glass.PotionName);
+            glass.IsFilled = false;
+            glass.PotionName = "";
+            glass.FillColor = Color.Transparent;
+
+            CreateGlassesFromInventory();
+
+            persuasionActive = false;
+
+            StartResultDialogue("Wrong potion sold with persuasion. You earned $" + price + ".", true);
             }
             else
             {
-                currentEmotion = CustomerEmotion.Angry;
+            currentEmotion = CustomerEmotion.Angry;
+            persuasionActive = false;
 
-                if (!correctPotion)
-                {
-                    StartResultDialogue("Is this a joke? That's not what I need!", false);
-                }
-                else
-                {
-                    StartResultDialogue("This could help, but it is too expensive!", false);
-                }
+            StartResultDialogue("Too expensive. Even persuasion could not save this scam.", false);
+            }
+            }
+            else
+            {
+            currentEmotion = CustomerEmotion.Angry;
+
+            if (!correctPotion)
+            {
+                StartResultDialogue("Is this a joke? That's not what I need!", false);
+            }
+            else
+            {
+        StartResultDialogue("This could help, but it is too expensive!", false);
+            }
             }
         }
 

@@ -83,7 +83,7 @@ namespace PharmaCat.Scripts
         private Vector2 panjurPosition;
         private Vector2 panjurRopePosition;
 
-
+        private bool persuasionActive;
         private bool recipeBookAnimatingOpen;
         private bool recipeBookAnimatingClose;
 
@@ -136,7 +136,7 @@ namespace PharmaCat.Scripts
         private float customerLeaveTimer = 0f;
         private float customerXOffset = 0f;
         private Rectangle skipCustomerButton;
-
+        
         private readonly TypewriterDialogue dialogue = new TypewriterDialogue();
         private readonly string[] customerCharacters = { "a", "b", "c", "d", "e", "f", "g", "h" };
         private bool introDialogueStarted = false;
@@ -420,7 +420,76 @@ namespace PharmaCat.Scripts
     );
 }
 
+        public void UsePotion(PotionGlassBox glass)
+        {
+    if (isCustomerLeaving || isCustomerEntering || dialogue.IsTyping)
+        return;
 
+    if (glass == null || !glass.IsFilled)
+        return;
+
+    string potionName = glass.PotionName;
+
+    if (!inventory.RemovePotion(potionName, 1))
+    {
+        StartResultDialogue("You don't have this potion.", false);
+        CreateGlassesFromInventory();
+        return;
+    }
+
+    switch (potionName)
+    {
+        case "Sleep Potion":
+            StartResultDialogue("You used Sleep Potion. The day ends.", true);
+
+            glass.IsFilled = false;
+            glass.PotionName = "";
+            glass.FillColor = Color.Transparent;
+
+            CreateGlassesFromInventory();
+            OnShopFinished?.Invoke();
+            return;
+
+        case "Persuasion Potion":
+            persuasionActive = true;
+            StartResultDialogue("Persuasion active. You can push a wrong potion at a higher price.", true);
+            break;
+
+        case "Charm Potion":
+            persuasionActive = true;
+            StartResultDialogue("Extreme Charm! Your persuasion skills are through the roof.", true);
+            break;
+
+        case "Clarity Potion":
+            inventory.AddMoney(50);
+            StartResultDialogue("Absolute clarity! You suddenly remembered where you hid $50.", true);
+            break;
+
+        case "Wisdom Potion":
+            inventory.MortarLevel++;
+            StartResultDialogue("You feel incredibly wise. Your Mortar Level permanently increased!", true);
+            break;
+
+        case "Holy Water Potion":
+            inventory.EmptyBottleCount += 3;
+            StartResultDialogue("Holy light fills the room! You mysteriously found 3 Empty Bottles.", true);
+            break;
+
+        case "Calm Potion":
+            StartResultDialogue("Ah, a deep breath. You feel relaxed, but nothing special happened.", true);
+            break;
+
+        default:
+            StartResultDialogue(potionName + " used, but it has no shop effect yet.", false);
+            break;
+        }
+
+        glass.IsFilled = false;
+        glass.PotionName = "";
+        glass.FillColor = Color.Transparent;
+
+        CreateGlassesFromInventory();
+        }
         public void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(texWall, Vector2.Zero, Color.White);

@@ -6,9 +6,6 @@ namespace PharmaCat.Scripts
     public class Customers
     {
         private static readonly Random random = new Random();
-
-        // Backward compatibility: old systems can still read this,
-        // but sale checks should use AcceptsPotion instead.
         public string WantedPotion { get; private set; }
 
         public List<string> AcceptablePotions { get; private set; } = new List<string>();
@@ -31,7 +28,7 @@ namespace PharmaCat.Scripts
             AcceptablePotions = new List<string>(selectedProblem.AcceptedPotions);
             WantedPotion = AcceptablePotions.Count > 0 ? AcceptablePotions[0] : "";
 
-            MaxPrice = random.Next(15, 46);
+            MaxPrice = random.Next(20, 150);
 
             string greeting = CustomerDialogueDatabase.GetRandomGreeting();
             string dialogue = CustomerDialogueDatabase.GetRandomDialogue(selectedProblem);
